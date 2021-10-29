@@ -1,0 +1,49 @@
+*{
+    outline: none;
+    cursor: initial;
+    font: initial;
+}
+body{
+    margin: 0;
+    overflow-x: hidden;
+}
+.ds-win{
+    position: fixed;
+    z-index: 50;
+    animation: popin 0.5s ease-out;
+    box-shadow: 0 7px 16px 0 rgba(0,0,0,.2);
+    will-change: top,left;
+    border-radius: 5px;
+    background-color: white;
+    padding: 6px 12px 6px 12px;
+}
+.ds-a{
+    position: absolute;
+}
+.ds-mov{
+    cursor: grab;
+}
+.ds-tra{
+    background-color: #ffffff00;
+    transition: background-color 0.3s linear;
+    -o-transition: background-color 0.3s linear;
+    -moz-transition: background-color 0.3s linear;
+    -webkit-transition: background-color 0.3s linear;
+}
+.ds-tra:hover{
+    background-color: white;
+}
+#ds-tips{
+    display: block;
+    position: absolute;
+    border-radius: 3px;
+    font-size: 6px;
+    color: whitesmoke;
+    padding: 2px 3px 2px 3px;
+    background-color: lightslategray;
+    animation: popin 0.4s ease-out;
+}
+@keyframes popin{
+    from{opacity: 0;}
+    to{opacity: 1;}
+}
