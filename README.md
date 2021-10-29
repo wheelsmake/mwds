@@ -10,7 +10,7 @@ MoreWindows，一个oink的组件，提供了网页overlay层上的几乎一切�
 
 ## 兼容性
 
-目前仅在Chromium和Webkit内核浏览器测试通过。不兼容IE9以下。
+目前仅在基于Chromium或Webkit的浏览器测试通过。不兼容IE9以下。
 
 我没有Apple设备，在Windows那个老掉牙的Safari上测试没通过
 
