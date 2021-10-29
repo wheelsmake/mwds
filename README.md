@@ -1,6 +1,6 @@
 # Oink组件：MWDS
 
-类似于之前老项目windows.js，一个“窗口”控制库。
+MoreWindows，一个oink的组件，提供了网页overlay层上的几乎一切功能：悬浮窗、菜单、提示框、消息框……
 
 基于JQuery，这是我用JQ写的第一个程序。天哪JQ太爽了！——来自一个Vanilla JS Coder的感叹
 
