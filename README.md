@@ -6,7 +6,7 @@
 
 没JQ感觉这个库极难实现。
 
-窗口操作和保存不使用JSON而是html原生，因为我还没学Vue、React、Angular之类的东西，原生html+class应该足够。
+窗口操作使用html原生，因为我还没学Vue、React、Angular之类的东西。
 
 ## 一、普通窗口
 
