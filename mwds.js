@@ -1,6 +1,6 @@
 ﻿console.log(
     "mwds.js - MoreWindows ©LJM12914"+"\r\n"+
-    "oink组件，当然也可以单独抽出来用，记得带上css https://github.com/ljm12914/oink"
+    "oink组件，当然也可以单独抽出来用，记得带上css https://github.com/ljm12914/mwds"
 ); //Herobrine保佑 永不出bug
 
 //公共变量区
@@ -27,21 +27,20 @@ $(function(){
     $("*").on("touchend",function(){moveUp();});
 //end移动
 //可关闭的窗口
+    clsAddToolTip();//给ds-cls添加提示框
     //鼠标
     $(".ds-cls").on("dblclick",function(e){if($(e.target).hasClass("ds-cls")) $(e.target).hide();});//防止事件冒泡
-    $(".ds-cls").on("mouseenter",function(e){showTips($(e.target),"双击关闭窗口");});
-    $(".ds-cls").on("mouseleave",function(){hideTips()});
     //触摸屏（oink：仅限触摸屏电脑,移动端会直接上菜单）
-    $(".ds-cls").on("touchstart",function(e){//FIXME:这里由于子节点的touchstart传不上来，暂时无法在点击窗口内容时出现提示。
-        let t = $(e.target);
-        showTips(t,"双击关闭窗口");
-        if(t.hasClass("ds-cls")) checkClose(t);//防止事件冒泡
-    });
-    $(".ds-cls").on("touchend",function(){hideTips()});
+    $(".ds-cls").on("touchstart",function(e){if($(e.target).hasClass("ds-cls")) checkClose(t);});//FIXME:这里由于子节点的touchstart传不上来，暂时无法在点击窗口内容时出现提示。
 //end可关闭的窗口
-//遮罩创建
-createMask();
-//end遮罩创建
+//overlay创建
+    createMask();//遮罩创建
+    $(".ds-tooltip").parent().addClass("ds-toolpar");//给tooltip父节点添加标记
+    //鼠标
+    $(".ds-toolpar").on("mouseenter",function(e){alignToolTip(e);});
+    //触摸屏
+    $(".ds-toolpar").on("touchstart",function(e){alignToolTip(e);});
+//endoverlay创建
 });
 //endJQuery主方法
 
@@ -136,17 +135,15 @@ function tOrb(a,b){
 
 function zIndex(obj){
     //TODO:zindex
-    let count = 0;
     let coverlist = [];
     for(let i = 0; i < winlist.length; i++){
         let torb = tOrb(obj,$(winlist[i]));
         if(torb == "b" || torb == "s" && !$(winlist[i]).hasClass("ds-zin")){
-            coverlist[coverlist.length] = $(winlist[i]);
-            count++;//FIXME:为啥这里™开始玄学了啊？为什么？！
+            coverlist[coverlist.length] = $(winlist[i]);//FIXME:为啥这里™开始玄学了啊？为什么？！
         }
     }
-    if(count != 0){//减少复杂度
-        obj.css("z-index",50 + count);
+    if(coverlist.length != 0){//减少复杂度
+        obj.css("z-index",50 + coverlist.length);
         obj.addClass("ds-zin");
         console.log(obj[0].classList);
         for(let i = 0; i < coverlist.length; i++){
@@ -154,51 +151,55 @@ function zIndex(obj){
         }
         obj.removeClass("ds-zin");
     }
+    else{
+        return;//强行回去还不行吗？！
+    }
 }
 //end动态提升方法
 
-//“关闭”
+//ds-cls相关
+function clsAddToolTip(){
+    let c = document.createElement("span");
+    $(c).addClass("ds-tooltip ds-tgra");
+    c.innerText = "双击关闭窗口";
+    $(".ds-cls").prepend(c);
+}
 function checkClose(){
 
 }
-//end“关闭”
+//endds-cls相关
 
-//小提示框接口
-function showTips(obj,text,width,height){
-    let tips = document.createElement("div");
-    tips.id = "ds-tips";
-    tips.innerHTML = text;
-    $("body").append(tips);
-    $(tips).css({"top":"200px","left":"200px"});
-    //TODO:计算tips出现的位置
+//提示框
+function alignToolTip(e){
+    e = $(e.target);
+    let tip = e.children(".ds-tooltip");
+    for(let i = 0; i < tip.length; i++){
+        $(tip[i]).css("left",$(e).innerWidth() / 2 - $(tip[i]).outerWidth() / 2 + "px");
+    }
 }
+//end提示框
 
-function hideTips(){
-    $("#ds-tips").remove();
-}
-//end小提示框接口
-
-//fixpos逻辑
-//TODO
+//fixpos
+    //TODO:
 function fixpos(){
 
 }
-
 function showFixpos(){
 
 }
 //endfixpos逻辑
 
-//提示框接口
-//TODO:遮罩
+//弹出框接口
+    //TODO:遮罩创建
 function createMask(){
 
 }
+    //显示
 function showPopOut(){
 
 }
-
+    //隐藏
 function hidePopOut(){
 
 }
-//end提示框接口
+//end弹出框接口

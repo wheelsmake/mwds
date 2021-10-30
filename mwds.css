@@ -1,26 +1,38 @@
+﻿/* mwds.css - MoreWindows ©LJM12914
+ * oink组件。https://github.com/ljm12914/mwds
+ */
+@keyframes gin{
+    from{opacity: 0;}
+    to{opacity: 1;}
+}
 *{
     outline: none;
+    /*cursor不可更改*/
     cursor: initial;
-    font: initial;
 }
 body{
     margin: 0;
     overflow-x: hidden;
+    overflow-y: auto;
 }
 .ds-win{
-    position: fixed;
+    /*position不可更改*/
+    position: fixed !important;
+    /*z-index不可更改*/
     z-index: 50;
-    animation: popin 0.5s ease-out;
-    box-shadow: 0 7px 16px 0 rgba(0,0,0,.2);
+    animation: gin 0.5s ease-out;
+    box-shadow: 0 0.4em 0.9em 0 rgba(0,0,0,.2);
     will-change: top,left;
     border-radius: 5px;
     background-color: white;
-    padding: 6px 12px 6px 12px;
+    padding: 0.5em 0.8em 0.5em 0.8em;
 }
 .ds-a{
-    position: absolute;
+    /*position不可更改*/
+    position: absolute !important;
 }
 .ds-mov{
+    /*cursor不可更改*/
     cursor: grab;
 }
 .ds-tra{
@@ -33,17 +45,26 @@ body{
 .ds-tra:hover{
     background-color: white;
 }
-#ds-tips{
-    display: block;
+.ds-tooltip{
+    /*position不可更改*/
     position: absolute;
+    /*visibility不可更改*/
+    visibility: hidden;
+    /*z-index不可更改*/
+    z-index: 999;
+    bottom: 105%;
+    text-align: center;
     border-radius: 3px;
     font-size: 6px;
     color: whitesmoke;
-    padding: 2px 3px 2px 3px;
+    padding: 0.4em 0.9em 0.4em 0.9em;
     background-color: lightslategray;
-    animation: popin 0.4s ease-out;
+
 }
-@keyframes popin{
-    from{opacity: 0;}
-    to{opacity: 1;}
+:hover > .ds-tooltip{
+    /*visibility不可更改*/
+    visibility: visible;
+}
+:hover > .ds-tgra{
+    animation: gin 0.2s ease-out;
 }
