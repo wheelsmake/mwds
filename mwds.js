@@ -135,14 +135,14 @@ function tOrb(a,b){
 }
 
 function zIndex(obj){
-    //TODO: zindex
+    //TODO:zindex
     let count = 0;
     let coverlist = [];
     for(let i = 0; i < winlist.length; i++){
         let torb = tOrb(obj,$(winlist[i]));
         if(torb == "b" || torb == "s" && !$(winlist[i]).hasClass("ds-zin")){
             coverlist[coverlist.length] = $(winlist[i]);
-            count++;//EFIXME:为啥这里™开始玄学了啊？为什么？！
+            count++;//FIXME:为啥这里™开始玄学了啊？为什么？！
         }
     }
     if(count != 0){//减少复杂度
@@ -170,7 +170,7 @@ function showTips(obj,text,width,height){
     tips.innerHTML = text;
     $("body").append(tips);
     $(tips).css({"top":"200px","left":"200px"});
-    //TODO: 计算tips出现的位置
+    //TODO:计算tips出现的位置
 }
 
 function hideTips(){
@@ -190,7 +190,7 @@ function showFixpos(){
 //endfixpos逻辑
 
 //提示框接口
-//TODO: 遮罩
+//TODO:遮罩
 function createMask(){
 
 }
