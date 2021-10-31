@@ -52,14 +52,12 @@ body{
     visibility: hidden;
     /*z-index不可更改*/
     z-index: 999;
-    bottom: 105%;
     text-align: center;
     border-radius: 3px;
     font-size: 6px;
     color: whitesmoke;
     padding: 0.4em 0.9em 0.4em 0.9em;
     background-color: lightslategray;
-
 }
 :hover > .ds-tooltip{
     /*visibility不可更改*/
