@@ -135,12 +135,11 @@ function tOrb(a, b){
 }
     //快速获取z-index
 function getZ(obj){return parseInt($(obj).css("z-index"));}
-    //递增/修改z-index
+    //增加/修改z-index
 function setZ(obj, isPlus, p){//p可以是负数！
-    if(p && isPlus) $(obj).css("z-index",getZ(obj) + p);
-    else if(isPlus) $(obj).css("z-index",getZ(obj) + 1);
+    if(isPlus) $(obj).css("z-index",getZ(obj) + p);
     else $(obj).css("z-index",p);
-    return getZ(obj);
+    //return getZ(obj);
 }
 
     //dark名鼎鼎的zIndex方法
@@ -148,8 +147,7 @@ function zIndex(obj){
     //FIXME:zindex基本能用了。赶快fix掉这个bug/斜眼笑
     setZ(obj,false,50);
     for(let i = 0; i < winlist.length; i++){
-        let torb = tOrb(obj,$(winlist[i]));
-        if(torb != "e" && !$(winlist[i]).hasClass("ds-zin") && $(winlist[i]).css("display") != "none"){
+        if((tOrb(obj,$(winlist[i])) != "e") && (!$(winlist[i]).hasClass("ds-zin")) && ($(winlist[i]).css("display") != "none")){
             obj.addClass("ds-zin");
             zIndex($(winlist[i]));
             setZ(obj,false,getZ($(winlist[i])) + 1);

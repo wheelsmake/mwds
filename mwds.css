@@ -64,5 +64,5 @@ body{
     visibility: visible;
 }
 :hover > .ds-tgra{
-    animation: gin 0.2s ease-out;
+    animation: gin .1s ease-out;
 }
