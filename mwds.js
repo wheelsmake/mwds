@@ -4,6 +4,9 @@
 ); //Herobrine保佑 永不出bug
 
 //公共变量区
+    //调试模式
+var dbgmode = true;
+    //end调试模式
     //移动相关
 var ismoving, istoclose = false;
 var deltatop, deltaleft, moving, movingj, duratime;
@@ -64,7 +67,7 @@ function dsWinPress(isTouch, e){
     moving = e.target;
     movingj = $(moving);
     if(movingj.hasClass("ds-mov")){//防止事件冒泡
-        movingj.css("z-index","1000");
+        setZ(movingj,false,zinmax() + 1,"strtmov");
         ismoving = true;
         if(isTouch){
             deltatop = e.touches[0].pageY - movingj.position().top;
@@ -80,7 +83,7 @@ function dsWinPress(isTouch, e){
     //移动中处理+边界探测
 function movingf(isTouch, e){
     if(ismoving){
-        //zIndex($(e));
+        //zIndex(movingj);//占用资源过多，使用zinmax方法代替
         if(isTouch){
             movingj.css("top",e.touches[0].pageY - deltatop);
             movingj.css("left",e.touches[0].pageX - deltaleft);
@@ -99,8 +102,7 @@ function movingf(isTouch, e){
 function moveUp(){
     if(ismoving){
         ismoving = false;
-        setZ(movingj,false,50);
-        zIndex(movingj);//重新计算z-index
+        //zIndex(movingj); //由于某些玄学因素，这里不能zIndex，否则会使bug更多
         delStyle($("html")[0]);
     }
 }
@@ -136,24 +138,31 @@ function tOrb(a, b){
     //快速获取z-index
 function getZ(obj){return parseInt($(obj).css("z-index"));}
     //增加/修改z-index
-function setZ(obj, isPlus, p){//p可以是负数！
+function setZ(obj, isPlus, p, dbginf){//p可以是负数！
     if(isPlus) $(obj).css("z-index",getZ(obj) + p);
     else $(obj).css("z-index",p);
+    if(dbgmode) console.log(obj[0].id + "->" + getZ(obj) + " " + dbginf);
     //return getZ(obj);
 }
 
-    //dark名鼎鼎的zIndex方法
+    //dark名鼎鼎的zIndex方法 FIXME:搞完了，但还是有点问题，4-3L时由于没有记录相对位置仍然会出现问题，解决方案：先把非e记录进数组再按zindex执行递归
 function zIndex(obj){
-    //FIXME:zindex基本能用了。赶快fix掉这个bug/斜眼笑
-    setZ(obj,false,50);
+    setZ(obj,false,50,"zin-f");
     for(let i = 0; i < winlist.length; i++){
         if((tOrb(obj,$(winlist[i])) != "e") && (!$(winlist[i]).hasClass("ds-zin")) && ($(winlist[i]).css("display") != "none")){
             obj.addClass("ds-zin");
-            zIndex($(winlist[i]));
-            setZ(obj,false,getZ($(winlist[i])) + 1);
+            setZ(obj,false,zIndex($(winlist[i])) + 1,"zin-l");
             obj.removeClass("ds-zin");
         }
     }
+    return getZ(obj);
+}
+
+    //查找全局最大zindex（移动窗口用）
+function zinmax(){
+    let m = 0;
+    for(let i = 0; i < winlist.length; i++) m = Math.max(m,getZ($(winlist[i])));
+    return m;
 }
 //end动态提升方法
 
@@ -171,7 +180,7 @@ function closeCls(isTouch, e){
         //setTimeout()//TODO:触摸屏端检测双击
     }
     else{
-        setZ(t,false,50);
+        setZ(t,false,50,"cls");
         t.hide();
     }
 }
