@@ -13,6 +13,38 @@ var deltatop, deltaleft, moving, movingj, duratime;
 var winlist = $(".ds-win");
     //end移动相关
 //end公共变量区
+//公共函数/方法区
+    //快速获取z-index
+function getZ(obj){return parseInt($(obj).css("z-index"));}
+
+    //增加/修改z-index
+function setZ(obj, isPlus, p, dbginf){//p可以是负数！
+    if(isPlus) $(obj).css("z-index",getZ(obj) + p);
+    else $(obj).css("z-index",p);
+    if(dbgmode) console.log(obj[0].id + "->" + getZ(obj) + " " + dbginf);
+    //return getZ(obj);
+}
+
+    //获取所需信息（top、left、width、height）top和left基于页面坐标！
+    function tt(o,t,dbginf){
+        o = $(o);
+        switch(t){
+            case "t": return o[0].getBoundingClientRect().top;
+            case "b": return tt(o,"t") + tt(o,"h");
+            case "l": return o[0].getBoundingClientRect().left;
+            case "r": return tt(o,"l") + tt(o,"w"); 
+            case "h":
+                if(window.getComputedStyle) return parseInt(window.getComputedStyle(o[0]).height.replace("px","")) + parseInt(o.css("padding-top").replace("px","")) + parseInt(o.css("padding-bottom").replace("px",""));
+                else return o[0].getBoundingClientRect().height;
+            case "w":
+                if(window.getComputedStyle) return parseInt(window.getComputedStyle(o[0]).width.replace("px","")) + parseInt(o.css("padding-left").replace("px","")) + parseInt(o.css("padding-right").replace("px",""));
+                else return o[0].getBoundingClientRect().width;
+            default:
+                if(dbgmode) console.log("tt error: wrong ml " + t + " " + dbginf);
+                return 0;
+        }
+    }
+//end公共函数/方法区
 
 //JQuery主方法
 $(function(){
@@ -40,9 +72,9 @@ $(function(){
     createMask();//遮罩创建
     $(".ds-tooltip").parent().addClass("ds-toolpar");//给tooltip父节点添加标记
     //鼠标
-    $(".ds-toolpar").on("mouseenter",function(e){alignToolTip(e);});
+    $(".ds-toolpar").on("mouseenter",function(e){alignToolTip($(e.target));});
     //触摸屏
-    $(".ds-toolpar").on("touchstart",function(e){alignToolTip(e);});
+    $(".ds-toolpar").on("touchstart",function(e){alignToolTip($(e.target));});
 //endoverlay创建
 });
 //endJQuery主方法
@@ -62,24 +94,33 @@ function pressDown(isTouch, e){
         t = $(t).parent();
     }
 }
+
     //ds-win按下处理
 function dsWinPress(isTouch, e){
     moving = e.target;
     movingj = $(moving);
     if(movingj.hasClass("ds-mov")){//防止事件冒泡
-        setZ(movingj,false,zinmax() + 1,"strtmov");
+        zinmax();
         ismoving = true;
         if(isTouch){
-            deltatop = e.touches[0].pageY - movingj.position().top;
-            deltaleft = e.touches[0].pageX - movingj.position().left;
+            deltatop = e.touches[0].pageY - tt(movingj,"t");
+            deltaleft = e.touches[0].pageX - tt(movingj,"l");
         }
         else{
-            deltatop = e.pageY - movingj.position().top;
-            deltaleft = e.pageX - movingj.position().left;
+            deltatop = e.pageY - tt(movingj,"t");
+            deltaleft = e.pageX - tt(movingj,"l");
         }
         $("*").css({"cursor":"grabbing","user-select":"none","-webkit-user-drag":"none","-webkit-user-select":"none"});
     }
 }
+
+    //移动窗口设置全局最大zindex
+function zinmax(){
+    let m = 0;
+    for(let i = 0; i < winlist.length; i++) m = Math.max(m,getZ($(winlist[i])));
+    setZ(movingj,false,m + 1,"zinmax");
+}
+
     //移动中处理+边界探测
 function movingf(isTouch, e){
     if(ismoving){
@@ -92,12 +133,13 @@ function movingf(isTouch, e){
             movingj.css("top",e.pageY - deltatop);
             movingj.css("left",e.pageX - deltaleft);
         }
-        if(movingj.position().left < 0) movingj.css("left",0);
-        if(movingj.position().top < 0) movingj.css("top",0);
-        if(movingj.position().left + movingj.innerWidth() > document.body.scrollWidth) movingj.css("left",document.body.scrollWidth - movingj.innerWidth());//此处不考虑横向滚动条，因此absolute元素也不能拖到右边去
-        if(movingj.position().top + movingj.innerHeight() > window.innerHeight && !movingj.hasClass("ds-a")) movingj.css("top",window.innerHeight - movingj.innerHeight());
+        if(tt(movingj,"l") < 0) movingj.css("left",0);
+        if(tt(movingj,"t") < 0) movingj.css("top",0);
+        if(tt(movingj,"r") > document.body.scrollWidth) movingj.css("left",document.body.scrollWidth - tt(movingj,"w"));//此处不考虑横向滚动条，因此absolute元素也不能拖到右边去
+        if(tt(movingj,"b") > innerHeight && !movingj.hasClass("ds-a")) movingj.css("top",innerHeight - tt(movingj,"h"));
     }
 }
+
     //松开处理
 function moveUp(){
     if(ismoving){
@@ -106,6 +148,7 @@ function moveUp(){
         delStyle($("html")[0]);
     }
 }
+
     //递归删除没用style
 function delStyle(dfs){
     let styles = "";
@@ -121,28 +164,19 @@ function delStyle(dfs){
 function tOrb(a, b){
     a = $(a);
     b = $(b);
-    let t = a.offset().top;
-    let o = t + a.innerHeight();
-    let l = a.offset().left;
-    let r = l + a.innerWidth();
-    let t1 = b.offset().top;
-    let o1 = t1 + b.innerHeight();
-    let l1 = b.offset().left;
-    let r1 = l1 + b.innerWidth();
+    let t = tt(a,"t");
+    let o = tt(a,"b");
+    let l = tt(a,"l");
+    let r = tt(a,"r");
+    let t1 = tt(b,"t");
+    let o1 = tt(b,"b");
+    let l1 = tt(b,"l");
+    let r1 = tt(b,"r");
     if(((t>t1&&t<o1)||(o>t1&&o<o1)||(t1>t&&t1<o)||(o1>t&&o1<o))&&((l>l1&&l<r1)||(r>l1&&r<r1)||(l1>l&&l1<r)||(r1>l&&r1<r))){//判断是否覆盖
         if(getZ(a) > getZ(b)) return "a";//a在上
         else if(getZ(a) < getZ(b)) return "b";//a在下
         else return "s";//两个一样
     }else return "e";//根本就没覆盖
-}
-    //快速获取z-index
-function getZ(obj){return parseInt($(obj).css("z-index"));}
-    //增加/修改z-index
-function setZ(obj, isPlus, p, dbginf){//p可以是负数！
-    if(isPlus) $(obj).css("z-index",getZ(obj) + p);
-    else $(obj).css("z-index",p);
-    if(dbgmode) console.log(obj[0].id + "->" + getZ(obj) + " " + dbginf);
-    //return getZ(obj);
 }
 
     //dark名鼎鼎的zIndex方法 FIXME:搞完了，但还是有点问题，4-3L时由于没有记录相对位置仍然会出现问题，解决方案：先把非e记录进数组再按zindex执行递归
@@ -158,21 +192,18 @@ function zIndex(obj){
     return getZ(obj);
 }
 
-    //查找全局最大zindex（移动窗口用）
-function zinmax(){
-    let m = 0;
-    for(let i = 0; i < winlist.length; i++) m = Math.max(m,getZ($(winlist[i])));
-    return m;
-}
 //end动态提升方法
 
 //ds-cls相关
+    //给ds-cls自动安排tooltip
 function clsAddToolTip(){
     let c = document.createElement("span");
-    $(c).addClass("ds-tooltip ds-tgra");
+    $(c).addClass("ds-tooltip ds-tgra ds-showb");
     c.innerText = "在空闲区域双击可关闭窗口";
     $(".ds-cls").prepend(c);
 }
+
+    //双击关闭ds-cls
 function closeCls(isTouch, e){
     let t = $(e.target);
     if(!t.hasClass("ds-cls")) return;
@@ -187,25 +218,47 @@ function closeCls(isTouch, e){
 //endds-cls相关
 
 //提示框
-function alignToolTip(e){
-    obj = $(e.target);
-    let tip = obj.children(".ds-tooltip");
-    for(let i = 0; i < tip.length; i++){
-        $(tip[i]).css("top",obj + "px");//先在顶部渲染
-        $(tip[i]).css("left",obj.innerWidth() / 2 - $(tip[i]).outerWidth() / 2 + "px");
-        if($(tip[i]).hasClass("ds-showb")){
-
+    //在正确的位置显示tooltip
+    //FIXME:快搞完了，反正就是行为很奇怪
+function alignToolTip(tipee){
+    let tiper = $(tipee.children(".ds-tooltip")[0]);//不管一个元素内含多个tooltip
+    if(tiper.hasClass("ds-showb")){//运行两次确保使用的数据正常
+        for(let i = 0; i < 2; i++){
+            tiper.css("top",tt(tipee,"h") + tt(tiper,"h") * .3 + "px");
+            tiper.css("left",tt(tipee,"w") / 2 - tt(tiper,"w") / 2 + "px");
         }
-        else if($(tip[i]).hasClass("ds-showl")){
-
+        return;
+    }
+    else if(tiper.hasClass("ds-showl")){
+        for(let i = 0; i < 2; i++){
+            tiper.css("top",tt(tipee,"h") / 2 - tt(tiper,"h") / 2 + "px");
+            tiper.css("left",- tt(tiper,"w") * 1.08 + "px");
         }
-        else if($(tip[i]).hasClass("ds-showr")){
-
+        return;
+    }
+    else if(tiper.hasClass("ds-showr")){
+        for(let i = 0; i < 2; i++){
+            tiper.css("top",tt(tipee,"h") / 2 - tt(tiper,"h") / 2 + "px");
+            tiper.css("left",tt(tipee,"w") + tt(tiper,"w") * .12 + "px");
         }
-        
+        return;
+    }
+    else{//在顶部渲染（默认）
+        for(let i = 0; i < 2; i++){
+            tiper.css("top",- tt(tiper,"h") * 1.3 + "px");
+            tiper.css("left",tt(tipee,"w") / 2 - tt(tiper,"w") / 2 + "px");
+        }
+        return;
     }
 }
 //end提示框
+
+//菜单
+    //TODO:
+function dropDown(){
+
+}
+//end菜单
 
 //fixpos
     //TODO:
@@ -217,7 +270,7 @@ function showFixpos(){
 }
 //endfixpos逻辑
 
-//弹出框接口
+//弹出框
     //TODO:遮罩创建
 function createMask(){
 
@@ -230,4 +283,4 @@ function showPopOut(){
 function hidePopOut(){
 
 }
-//end弹出框接口
+//end弹出框
