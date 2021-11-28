@@ -39,47 +39,94 @@ body{
 }
 .ds-tra{
     background-color: #ffffff00;
-    transition: background-color .3s linear;
-    -o-transition: background-color .3s linear;
-    -moz-transition: background-color .3s linear;
-    -webkit-transition: background-color .3s linear;
+    transition: background-color .2s ease-in-out;
+    -o-transition: background-color .2s ease-in-out;
+    -moz-transition: background-color .2s ease-in-out;
+    -webkit-transition: background-color .2s ease-in-out;
 }
 .ds-tra:hover{
     background-color: white;
 }
-.ds-toolpar{
+.ds-tp{
     /*position不可更改*/
     position: relative;
 }
-.ds-tooltip{
+.ds-tt{
     /*position不可更改*/
-    position: absolute;
+    position: absolute !important;
     /*opacity不可更改*/
     opacity: 0;
     /*z-index不可更改*/
-    z-index: 999;
+    z-index: 999 !important;
     text-align: center;
     border-radius: 3px;
-    font-size: 6px;
+    font-size: 8px;
     color: whitesmoke;
-    padding: .4em .9em .4em .9em;
+    padding: .4em .9em .5em .9em;
     background-color: lightslategray;
-    min-width: 50px;
 }
-.ds-tgra{
+.ds-tt-gra{
     transition: opacity .1s ease-out;
     -o-transition: opacity .1s ease-out;
     -moz-transition: opacity .1s ease-out;
     -webkit-transition: opacity .1s ease-out;
 }
-.ds-showb{
-    min-width: none;
+.ds-tt-t,.ds-tt-t-t{
+    bottom: 108%;
 }
-.ds-showl{
-    min-width: none;
-    max-width: 100px;
+.ds-tt-b{
+    top: 108%;
 }
-:hover > .ds-tooltip{
+.ds-tt-l{
+    top: 25%;
+    right: 105%;
+    min-width: 50px;
+}
+.ds-tt-r{
+    left: 105%;
+    min-width: 50px;
+}
+.ds-tt-t-t::after{
+    position: inherit;
+    content: "";
+    top: 100%;
+    left: 50%;
+    margin-left: -6px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: lightslategray transparent transparent transparent;
+}
+.ds-tt-b-t::after{
+    position: inherit;
+    content: "";
+    bottom: 100%;
+    left: 50%;
+    margin-left: -6px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent lightslategray transparent;
+}
+.ds-tt-l-t::after{
+    position: inherit;
+    content: "";
+    top: 50%;
+    left: 100%;
+    margin-top: -6px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent transparent lightslategray;
+}
+.ds-tt-r-t::after{
+    position: inherit;
+    content: "";
+    top: 50%;
+    right: 100%;
+    margin-top: -6px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent lightslategray transparent transparent;
+}
+:hover > .ds-tt{
     /*opacity不可更改*/
-    opacity: 1;
+    opacity: 0.92;
 }

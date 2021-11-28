@@ -6,48 +6,59 @@
 //公共变量区
     //调试模式
 var dbgmode = true;
-    //end调试模式
     //移动相关
 var ismoving, istoclose = false;
-var deltatop, deltaleft, moving, movingj, duratime;
+var deltatop, deltaleft, moving, movingj;
+    //全局窗口数组
 var winlist = $(".ds-win");
-    //end移动相关
 //end公共变量区
 //公共函数/方法区
     //快速获取z-index
-function getZ(obj){return parseInt($(obj).css("z-index"));}
+function getZ(o){return parseInt($(o).css("z-index"));}
 
     //增加/修改z-index
-function setZ(obj, isPlus, p, dbginf){//p可以是负数！
-    if(isPlus) $(obj).css("z-index",getZ(obj) + p);
-    else $(obj).css("z-index",p);
-    if(dbgmode) console.log(obj[0].id + "->" + getZ(obj) + " " + dbginf);
+function setZ(o, isPlus, p, dbginf){//p可以是负数！
+    if(isPlus) $(o).css("z-index",getZ(o) + p);
+    else $(o).css("z-index",p);
+    if(dbgmode) console.log(o[0].id + "->" + getZ(o) + " " + dbginf);
     //return getZ(obj);
 }
 
     //获取所需信息（top、left、width、height）top和left基于页面坐标！
-    function tt(o,t,dbginf){
-        o = $(o);
-        switch(t){
-            case "t": return o[0].getBoundingClientRect().top;
-            case "b": return tt(o,"t") + tt(o,"h");
-            case "l": return o[0].getBoundingClientRect().left;
-            case "r": return tt(o,"l") + tt(o,"w"); 
-            case "h":
-                if(window.getComputedStyle) return parseInt(window.getComputedStyle(o[0]).height.replace("px","")) + parseInt(o.css("padding-top").replace("px","")) + parseInt(o.css("padding-bottom").replace("px",""));
-                else return o[0].getBoundingClientRect().height;
-            case "w":
-                if(window.getComputedStyle) return parseInt(window.getComputedStyle(o[0]).width.replace("px","")) + parseInt(o.css("padding-left").replace("px","")) + parseInt(o.css("padding-right").replace("px",""));
-                else return o[0].getBoundingClientRect().width;
-            default:
-                if(dbgmode) console.log("tt error: wrong ml " + t + " " + dbginf);
-                return 0;
-        }
+    //client<height/width>：内容+padding
+    //offset<height/width>：内容+padding+border+滚动条（如果有）
+    //outer<height/width>：内容+padding+border+滚动条（如果有）+margin
+function tt(o,t,dbginf){
+    o = $(o)[0];
+    switch(t){
+        case "t": return o.getBoundingClientRect().top;
+        case "b": return tt(o,"t") + tt(o,"h");
+        case "l": return o.getBoundingClientRect().left;
+        case "r": return tt(o,"l") + tt(o,"w"); 
+        case "h": return o.offsetHeight;
+        case "w": return o.offsetWidth;
+        case "ih": return o.offsetHeight - parseInt($(o).css("padding-top").replace("px","")) - parseInt($(o).css("padding-bottom").replace("px",""));
+        case "iw": return o.offsetWidth - parseInt($(o).css("padding-left").replace("px","")) - parseInt($(o).css("padding-right").replace("px",""));
+        default:
+            if(dbgmode) console.log("tt error: wrong ml " + t + " " + dbginf);
+            return 0;
     }
+}
+    //
+function checkPos(o){
+    if(tt(o,"l") < 0) o.css("left",0);
+    if(tt(o,"t") < 0) o.css("top",0);
+    if(tt(o,"r") > document.body.scrollWidth) o.css("left",document.body.scrollWidth - tt(o,"w"));//此处不考虑横向滚动条，因此absolute元素也不能拖到右边去
+    if(tt(o,"b") > innerHeight && !o.hasClass("ds-a")) o.css("top",innerHeight - tt(o,"h"));
+}
 //end公共函数/方法区
 
 //JQuery主方法
 $(function(){
+//防止窗口变化时超限
+    $("body").on("resize",function(e){
+        console.log("a");
+    });
 //移动
     //鼠标
     $("*").removeClass("ds-zin");//防止有人在classlist里写ds-zin锁窗口
@@ -62,20 +73,27 @@ $(function(){
     $("*").on("touchend",function(){moveUp();});
 //end移动
 //可关闭的窗口
-    clsAddToolTip();//给ds-cls添加提示框
+    clsAddToolTip();//给ds-cls添加提示框（必须放在overlay创建之前执行）
     //鼠标
     $(".ds-cls").on("dblclick",function(e){closeCls(false,e)});
     //触摸屏（oink：仅限触摸屏电脑,移动端会直接上菜单）
     $(".ds-cls").on("touchstart",function(e){closeCls(true,e);});//FIXME:这里由于子节点的touchstart传不上来，无法在点击窗口内容时出现提示。
 //end可关闭的窗口
 //overlay创建
-    createMask();//遮罩创建
-    $(".ds-tooltip").parent().addClass("ds-toolpar");//给tooltip父节点添加标记
-    //鼠标
-    $(".ds-toolpar").on("mouseenter",function(e){alignToolTip($(e.target));});
-    //触摸屏
-    $(".ds-toolpar").on("touchstart",function(e){alignToolTip($(e.target));});
+    createMask();//弹出框/菜单遮罩创建
 //endoverlay创建
+//tooltip相关
+    $(".ds-tt").parent().addClass("ds-tp");//给toolip父节点添加标记
+    //有三角形class则自动选择方向
+    $(".ds-tt-t-t").addClass("ds-tt-t");
+    $(".ds-tt-b-t").addClass("ds-tt-b");
+    $(".ds-tt-l-t").addClass("ds-tt-l");
+    $(".ds-tt-r-t").addClass("ds-tt-r");
+    //鼠标
+    $(".ds-tp").on("mouseenter",function(e){alignToolTip($(e.target));});
+    //触摸屏
+    $(".ds-tp").on("touchstart",function(e){alignToolTip($(e.target));});
+    //endtooltip相关
 });
 //endJQuery主方法
 
@@ -133,10 +151,7 @@ function movingf(isTouch, e){
             movingj.css("top",e.pageY - deltatop);
             movingj.css("left",e.pageX - deltaleft);
         }
-        if(tt(movingj,"l") < 0) movingj.css("left",0);
-        if(tt(movingj,"t") < 0) movingj.css("top",0);
-        if(tt(movingj,"r") > document.body.scrollWidth) movingj.css("left",document.body.scrollWidth - tt(movingj,"w"));//此处不考虑横向滚动条，因此absolute元素也不能拖到右边去
-        if(tt(movingj,"b") > innerHeight && !movingj.hasClass("ds-a")) movingj.css("top",innerHeight - tt(movingj,"h"));
+        checkPos(movingj);//防止位置超限
     }
 }
 
@@ -198,7 +213,7 @@ function zIndex(obj){
     //给ds-cls自动安排tooltip
 function clsAddToolTip(){
     let c = document.createElement("span");
-    $(c).addClass("ds-tooltip ds-tgra ds-showb");
+    $(c).addClass("ds-tt ds-tt-gra ds-tt-l-t");
     c.innerText = "在空闲区域双击可关闭窗口";
     $(".ds-cls").prepend(c);
 }
@@ -218,37 +233,16 @@ function closeCls(isTouch, e){
 //endds-cls相关
 
 //提示框
-    //在正确的位置显示tooltip
-    //FIXME:快搞完了，反正就是行为很奇怪
-function alignToolTip(tipee){
-    let tiper = $(tipee.children(".ds-tooltip")[0]);//不管一个元素内含多个tooltip
-    if(tiper.hasClass("ds-showb")){//运行两次确保使用的数据正常
-        for(let i = 0; i < 2; i++){
-            tiper.css("top",tt(tipee,"h") + tt(tiper,"h") * .3 + "px");
-            tiper.css("left",tt(tipee,"w") / 2 - tt(tiper,"w") / 2 + "px");
-        }
-        return;
+    //tooltip辅助显示
+function alignToolTip(tparent){
+    let tooltip = $(tparent.children(".ds-tt")[0]);//不管一个元素内含多个tooltip
+    //对于浮动在上下的tooltip需要左右对齐（1/2宽度）
+    if(tooltip.hasClass("ds-tt-t") || tooltip.hasClass("ds-tt-b")){
+        tooltip.css("margin-left",(tooltip.width() + $(tparent).width()) / 2 + "px");
     }
-    else if(tiper.hasClass("ds-showl")){
-        for(let i = 0; i < 2; i++){
-            tiper.css("top",tt(tipee,"h") / 2 - tt(tiper,"h") / 2 + "px");
-            tiper.css("left",- tt(tiper,"w") * 1.08 + "px");
-        }
-        return;
-    }
-    else if(tiper.hasClass("ds-showr")){
-        for(let i = 0; i < 2; i++){
-            tiper.css("top",tt(tipee,"h") / 2 - tt(tiper,"h") / 2 + "px");
-            tiper.css("left",tt(tipee,"w") + tt(tiper,"w") * .12 + "px");
-        }
-        return;
-    }
-    else{//在顶部渲染（默认）
-        for(let i = 0; i < 2; i++){
-            tiper.css("top",- tt(tiper,"h") * 1.3 + "px");
-            tiper.css("left",tt(tipee,"w") / 2 - tt(tiper,"w") / 2 + "px");
-        }
-        return;
+    //对于浮动在左右的tooltip需要上下对齐（1/2高度）
+    else if(tooltip.hasClass("ds-tt-l") || tooltip.hasClass("ds-tt-r")){
+        tooltip.css("margin-top",-tt(tparent,"ih") / 2 + "px");
     }
 }
 //end提示框
