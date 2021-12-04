@@ -61,6 +61,17 @@ function checkPos(o,dbginf){
     if(tt(o,"r") > document.body.scrollWidth) o.css("left",document.body.scrollWidth - tt(o,"w"));//此处不考虑横向滚动条，因此absolute元素也不能拖到右边去
     if(tt(o,"b") > innerHeight && !o.hasClass("ds-a")) o.css("top",innerHeight - tt(o,"h"));
 }
+    //仿JQuery函数区
+if(window.HTMLElement){
+    HTMLElement.prototype.addClass = function(c){this.classList.add(c);}
+    HTMLElement.prototype.removeClass = function(c){return this.classList.replace(c,"");}
+    HTMLElement.prototype.hasClass = function(c){return this.classList.contains(c);}
+}
+else{
+    //TODO:兼容一下不支持HTMLElement的浏览器
+    while(true) alert("您的浏览器不支持mwds。");
+}
+    //end仿JQuery函数区
 //end公共函数/方法区
 
 //JQuery主方法

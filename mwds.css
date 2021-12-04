@@ -9,7 +9,7 @@
     /*outline建议生产时注释掉*/
     outline: none;
     /*cursor不可更改*/
-    cursor: initial;
+    cursor: initial;background-attachment: ;
 }
 /*body建议生产时注释掉*/
 body{
@@ -60,7 +60,7 @@ body{
     z-index: 999 !important;
     text-align: center;
     border-radius: 3px;
-    font-size: 8px;
+    font-size: 12px;
     color: whitesmoke;
     padding: .4em .9em .5em .9em;
     background-color: lightslategray;
