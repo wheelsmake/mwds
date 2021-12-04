@@ -9,7 +9,7 @@
     /*outline建议生产时注释掉*/
     outline: none;
     /*cursor不可更改*/
-    cursor: initial;background-attachment: ;
+    cursor: initial;
 }
 /*body建议生产时注释掉*/
 body{
