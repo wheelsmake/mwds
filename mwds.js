@@ -24,28 +24,38 @@ function setZ(o, isPlus, p, dbginf){//p可以是负数！
     //return getZ(obj);
 }
 
-    //获取所需信息（top、left、width、height）top和left基于页面坐标！
+    //获取元素各种坐标信息的封装函数
     //client<height/width>：内容+padding
     //offset<height/width>：内容+padding+border+滚动条（如果有）
     //outer<height/width>：内容+padding+border+滚动条（如果有）+margin
+    //F(ixed)T(op)：相对于当前页面上端的坐标，T(op)：相对于网页上端的坐标，BLR一样
+    //P(ure)H(eight)：元素本身的高度（盒模型最里面那个纯高度，不包括padding margin border scroll）
 function tt(o,t,dbginf){
     o = $(o)[0];
     switch(t){
-        case "t": return o.getBoundingClientRect().top;
+        case "t": return parseInt($(o).css("top").replace("px",""));
+        case "ft": return o.getBoundingClientRect().top;
         case "b": return tt(o,"t") + tt(o,"h");
-        case "l": return o.getBoundingClientRect().left;
-        case "r": return tt(o,"l") + tt(o,"w"); 
+        case "fb": return tt(o,"ft") + tt(o,"h");
+        case "l": return parseInt($(o).css("left").replace("px",""));
+        case "fl": return o.getBoundingClientRect().left;
+        case "r": return tt(o,"l") + tt(o,"w");
+        case "fr": return tt(o,"fl") + tt(o,"w");
         case "h": return o.offsetHeight;
         case "w": return o.offsetWidth;
-        case "ih": return o.offsetHeight - parseInt($(o).css("padding-top").replace("px","")) - parseInt($(o).css("padding-bottom").replace("px",""));
-        case "iw": return o.offsetWidth - parseInt($(o).css("padding-left").replace("px","")) - parseInt($(o).css("padding-right").replace("px",""));
+        case "ph": return o.clientHeight - parseInt($(o).css("padding-top").replace("px","")) - parseInt($(o).css("padding-bottom").replace("px",""));
+        case "pw": return o.clientWidth - parseInt($(o).css("padding-left").replace("px","")) - parseInt($(o).css("padding-right").replace("px",""));
         default:
             if(dbgmode) console.log("tt error: wrong ml " + t + " " + dbginf);
             return 0;
     }
 }
-    //
-function checkPos(o){
+    //窗口越界检测
+function checkPos(o,dbginf){
+    if(dbgmode){
+        if(dbginf) console.log("checkPos: " + dbginf);
+        else console.log("checkPos " + $(o)[0].id);
+    }
     if(tt(o,"l") < 0) o.css("left",0);
     if(tt(o,"t") < 0) o.css("top",0);
     if(tt(o,"r") > document.body.scrollWidth) o.css("left",document.body.scrollWidth - tt(o,"w"));//此处不考虑横向滚动条，因此absolute元素也不能拖到右边去
@@ -56,9 +66,7 @@ function checkPos(o){
 //JQuery主方法
 $(function(){
 //防止窗口变化时超限
-    $("body").on("resize",function(e){
-        console.log("a");
-    });
+    window.addEventListener("resize",function(){for(let i = 0; i < winlist.length; i++)checkPos($(winlist[i]),"resize");});
 //移动
     //鼠标
     $("*").removeClass("ds-zin");//防止有人在classlist里写ds-zin锁窗口
@@ -84,16 +92,11 @@ $(function(){
 //endoverlay创建
 //tooltip相关
     $(".ds-tt").parent().addClass("ds-tp");//给toolip父节点添加标记
-    //有三角形class则自动选择方向
-    $(".ds-tt-t-t").addClass("ds-tt-t");
-    $(".ds-tt-b-t").addClass("ds-tt-b");
-    $(".ds-tt-l-t").addClass("ds-tt-l");
-    $(".ds-tt-r-t").addClass("ds-tt-r");
     //鼠标
     $(".ds-tp").on("mouseenter",function(e){alignToolTip($(e.target));});
     //触摸屏
     $(".ds-tp").on("touchstart",function(e){alignToolTip($(e.target));});
-    //endtooltip相关
+//endtooltip相关
 });
 //endJQuery主方法
 
@@ -177,8 +180,6 @@ function delStyle(dfs){
 //动态提升方法
     //判断a在b上面还是下面+检测
 function tOrb(a, b){
-    a = $(a);
-    b = $(b);
     let t = tt(a,"t");
     let o = tt(a,"b");
     let l = tt(a,"l");
@@ -237,12 +238,12 @@ function closeCls(isTouch, e){
 function alignToolTip(tparent){
     let tooltip = $(tparent.children(".ds-tt")[0]);//不管一个元素内含多个tooltip
     //对于浮动在上下的tooltip需要左右对齐（1/2宽度）
-    if(tooltip.hasClass("ds-tt-t") || tooltip.hasClass("ds-tt-b")){
-        tooltip.css("margin-left",(tooltip.width() + $(tparent).width()) / 2 + "px");
+    if(tooltip.hasClass("ds-tt-t") || tooltip.hasClass("ds-tt-b") || tooltip.hasClass("ds-tt-t-t") || tooltip.hasClass("ds-tt-b-t")){
+        tooltip.css("margin-left",(tt(tooltip,"pw") - tt(tparent,"pw")) / 2 + "px");
     }
     //对于浮动在左右的tooltip需要上下对齐（1/2高度）
-    else if(tooltip.hasClass("ds-tt-l") || tooltip.hasClass("ds-tt-r")){
-        tooltip.css("margin-top",-tt(tparent,"ih") / 2 + "px");
+    else if(tooltip.hasClass("ds-tt-l") || tooltip.hasClass("ds-tt-r") || tooltip.hasClass("ds-tt-l-t") || tooltip.hasClass("ds-tt-r-t")){
+        tooltip.css("margin-top",-(tt(tooltip,"ph") - tt(tparent,"ph")) / 2 + "px");
     }
 }
 //end提示框

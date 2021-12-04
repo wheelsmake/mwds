@@ -74,15 +74,14 @@ body{
 .ds-tt-t,.ds-tt-t-t{
     bottom: 108%;
 }
-.ds-tt-b{
+.ds-tt-b,.ds-tt-b-t{
     top: 108%;
 }
-.ds-tt-l{
-    top: 25%;
+.ds-tt-l,.ds-tt-l-t{
     right: 105%;
     min-width: 50px;
 }
-.ds-tt-r{
+.ds-tt-r,.ds-tt-r-t{
     left: 105%;
     min-width: 50px;
 }
