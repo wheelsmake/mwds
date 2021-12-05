@@ -64,13 +64,13 @@ MoreWindows，一个oink的组件，提供了网页overlay层上的几乎一切�
 ```html
 <span necessary>
     <span class="ds-tt">tip content</span>
-    <span notnecessary>main text content</span>
+    main text content
 </span>
 ```
 
 `necessary`是必须的，它规定了能产生提示框的区域。
 
-`notnecessary`不是必须的，但在某些情况下不使用这个元素包围文本内容会导致对齐问题。
+**重要提示**：`<span class="ds-tt">`必须位于`main text content`前！否则将会导致提示框出现对齐问题！
 
 ### 属性表
 
