@@ -24,6 +24,8 @@ body{
     z-index: 50;
     animation: gin .5s ease-out;
     box-shadow: 0 .4em .9em 0 #00000033;
+    /*兼容没有box-shadow的IE9以下*/
+    border: solid .3px #00000010;
     will-change: top, left;
     border-radius: 5px;
     background-color: white;

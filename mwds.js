@@ -11,7 +11,8 @@
  *  │ ├---仿JQuery函数区todo:
  *  │ ├---z-index获取与修改
  *  │ ├---`tt`获取坐标信息
- *  │ └---`checkPos`窗口越界检测
+ *  │ ├---`checkPos`窗口越界检测
+ *  │ └---不支持组件提示
  *  │
  *  ├-┬-JQuery主函数（即将弃用）
  *  │ ├---视口变化时`checkPos`
@@ -54,13 +55,24 @@ var winlist = $(".ds-win");
 //公共函数/方法区
     //仿JQuery函数区
 if(window.HTMLElement){
-    HTMLElement.prototype.addClass = function(c){this.classList.add(c);}
+    HTMLElement.prototype.addClass = function(c){this.classList.add(c);return this;}
     HTMLElement.prototype.removeClass = function(c){return this.classList.replace(c,"");}
     HTMLElement.prototype.hasClass = function(c){return this.classList.contains(c);}
+    HTMLElement.prototype.css = function(){
+        if(arguments.length==1){
+            return this.style.getPropertyValue(arguments[0]);
+        }
+        else if(arguments.length==2){
+            for(let i = 0; i < arguments[1].length; i++){
+                this.style.setProperty(i,arguments[1][i]);
+            }
+            return this;
+        }
+    }
 }
 else{
     //todo:兼容一下不支持HTMLElement的浏览器
-    while(true) alert("您的浏览器不支持mwds。");
+    noSupport("mwds");
 }
     //end仿JQuery函数区
     //快速获取z-index
@@ -80,6 +92,7 @@ function setZ(o, isP, p, dbginf){//p可以是负数！
     //outer<height/width>：内容+padding+border+滚动条（如果有）+margin
     //F(ixed)T(op)：相对于当前页面上端的坐标，T(op)：相对于网页上端的坐标，B、L、R一样
     //P(ure)H(eight)：元素本身的高度（盒模型最里面那个纯高度，不包括padding margin border scroll）
+    //A(ll)H(eight)：元素所有的高度（outer<height/width>）
 function tt(o,t,dbginf){
     o = $(o)[0];
     switch(t){
@@ -93,6 +106,8 @@ function tt(o,t,dbginf){
         case "fr": return tt(o,"fl") + tt(o,"w");
         case "h": return o.offsetHeight;
         case "w": return o.offsetWidth;
+        case "ah": return o.outerHeight;
+        case "aw": return o.outerWidth;
         case "ph": return o.clientHeight - parseInt($(o).css("padding-top").replace("px","")) - parseInt($(o).css("padding-bottom").replace("px",""));
         case "pw": return o.clientWidth - parseInt($(o).css("padding-left").replace("px","")) - parseInt($(o).css("padding-right").replace("px",""));
         default:
@@ -112,12 +127,17 @@ function checkPos(o,dbginf){
     if(tt(o,"r") > document.body.scrollWidth) o.css("left",document.body.scrollWidth - tt(o,"w"));//此处不考虑横向滚动条，因此absolute元素也不能拖到右边去
     if(tt(o,"b") > innerHeight && !o.hasClass("ds-a")) o.css("top",innerHeight - tt(o,"h"));
 }
+
+    //不支持时显示提示
+function noSupport(m){
+    alert("您的浏览器不支持该组件："+m+"。网页的浏览体验可能会有所损失。");
+}
 //end公共函数/方法区
 
 //JQuery主方法
 $(function(){
 //防止窗口变化时超限
-    window.addEventListener("resize",function(){for(let i = 0; i < winlist.length; i++)checkPos($(winlist[i]),"resize");});
+    window.addEventListener("resize",function(){for(let i = 0; i < winlist.length; i++)if(i.hasClass("ds-f")){checkPos($(winlist[i]),"resize");}});
 //移动
     //鼠标
     $("*").removeClass("ds-zin");//防止有人在classlist里写ds-zin锁窗口
@@ -223,7 +243,7 @@ function delStyle(d){
     $.each(d.style,function(z,key){styles += key;});
     if(styles == "cursoruser-select-webkit-user-drag") $(d).removeAttr("style");
     else $(d).css({"cursor":"","user-select":"","-webkit-user-drag":"","-webkit-user-select":""});
-    for(let i = 0; i < d.children.length; i++) delStyle(d.children[i]);
+    for(let i = 0;i < d.children.length; i++) delStyle(d.children[i]);
 }
 //end移动方法
 
