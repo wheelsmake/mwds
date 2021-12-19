@@ -1,6 +1,5 @@
 ﻿/* mwds框架目标：10KB很不错，40KB及格线，80KB是底线；注释至少占文件的30%大小，并且力求易懂。
- * 本文件为mwds唯一JavaScript文件，也即将成为mwds唯一需要的JS文件。
- * 正在脱离JQuery，因为它太大了——足足有88KB。
+ * 本文件为mwds唯一JavaScript文件。
  * 为了防止压缩代码时破坏代码，我没有开启变量缩短选项，而是在代码中使用简短的字符变量“手动”压缩代码，同时保留重要变量的长名称。
  * Herobrine保佑 永不出bug
  * mwds.js
@@ -8,7 +7,6 @@
  *  ├---公共变量区（调试模式、移动相关、所有窗口数组`winlist`）
  *  │
  *  ├-┬-公共函数/方法区
- *  │ ├---仿JQuery函数区todo:
  *  │ ├---z-index获取与修改
  *  │ ├---`tt`获取坐标信息
  *  │ ├---`checkPos`窗口越界检测
@@ -42,7 +40,6 @@
  *  todo:
  */
 console.log("mwds.js - MoreWindows ©LJM12914\r\noink组件。 https://github.com/openink/mwds");
-
 //公共变量区
     //调试模式
 var dbgmode = true;
@@ -53,28 +50,6 @@ var dtop, dleft, move;
 var winlist = $(".ds-win");
 //end公共变量区
 //公共函数/方法区
-    //仿JQuery函数区
-if(window.HTMLElement){
-    HTMLElement.prototype.addClass = function(c){this.classList.add(c);return this;}
-    HTMLElement.prototype.removeClass = function(c){return this.classList.replace(c,"");}
-    HTMLElement.prototype.hasClass = function(c){return this.classList.contains(c);}
-    HTMLElement.prototype.css = function(){
-        if(arguments.length==1){
-            return this.style.getPropertyValue(arguments[0]);
-        }
-        else if(arguments.length==2){
-            for(let i = 0; i < arguments[1].length; i++){
-                this.style.setProperty(i,arguments[1][i]);
-            }
-            return this;
-        }
-    }
-}
-else{
-    //todo:兼容一下不支持HTMLElement的浏览器
-    noSupport("mwds");
-}
-    //end仿JQuery函数区
     //快速获取z-index
 function getZ(o){return parseInt($(o).css("z-index"));}
 
@@ -137,7 +112,7 @@ function noSupport(m){
 //JQuery主方法
 $(function(){
 //防止窗口变化时超限
-    window.addEventListener("resize",function(){for(let i = 0; i < winlist.length; i++)if(i.hasClass("ds-f")){checkPos($(winlist[i]),"resize");}});
+    window.addEventListener("resize",function(){for(let i = 0; i < winlist.length; i++)if($(i).hasClass("ds-f")){checkPos($(winlist[i]),"resize");}});
 //移动
     //鼠标
     $("*").removeClass("ds-zin");//防止有人在classlist里写ds-zin锁窗口
