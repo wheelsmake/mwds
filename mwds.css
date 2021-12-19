@@ -61,8 +61,8 @@ body{
     /*z-index不可更改*/
     z-index: 999 !important;
     text-align: center;
-    border-radius: 3px;
-    font-size: 12px;
+    border-radius: .25rem;
+    font-size: .6rem;
     color: whitesmoke;
     padding: .4em .9em .5em .9em;
     background-color: lightslategray;
