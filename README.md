@@ -2,9 +2,7 @@
 
 MoreWindows，一个oink的组件，提供了网页overlay层上的几乎一切功能：悬浮窗、菜单、弹出框、提示框、消息框……
 
-~~这是我用JQuery写的第一个组件~~ 现在已经不用了，Vanilla JS NB！
-
-窗口操作使用html原生。
+~~这是我用JQuery写的第一个组件~~ 现在已经不用了，Vanilla JS NB！窗口操作使用html原生。
 
 ## 兼容性
 
@@ -14,14 +12,14 @@ MoreWindows，一个oink的组件，提供了网页overlay层上的几乎一切�
 |:--------------:|:----------:|:-------------:|:----------:|
 | Google Chrome  | 无Mac设备可供测试 | Via（即webview） | 无iOS设备可供测试 |
 | Firefox        |            | 小米自带          |            |
-| Edge（Chrome内核） |            |               |            |
-| Opera          |            |               |            |
+| Edge（Chrome内核） |            | 华为自带          |            |
+| Opera          |            | UC            |            |
 | 360            |            |               |            |
 | QQ             |            |               |            |
 | 傲游             |            |               |            |
 | 搜狗             |            |               |            |
 
-#### 不兼容IE9以下，因为使用了`box-shadow`。可自行更改。
+#### IE9以下无`box-shadow`，使用`border`进行了兼容。可自行更改。
 
 ## 一、普通窗口
 
@@ -51,11 +49,9 @@ MoreWindows，一个oink的组件，提供了网页overlay层上的几乎一切�
 
 窗口的`z-index`最小值（默认值）是`50`，目前不支持修改。若出现堆叠窗口，z-index的范围会向上扩展以容纳这些窗口。移动中的窗口拥有**目前页面中所有窗口的`z-index`最大值+1**的`z-index`，以确保它的拖动不会受任何窗口影响（但是可能会受到其他元素影响！建议不要使用固定的高`z-index`元素以免拖动窗口出现问题）。
 
-按住<kbd>Ctrl</kbd>+<kbd>Alt</kbd>可以无视一切窗口内元素的阻碍，随意拖动/关闭窗口。
-
 ## 二、提示框与弹出框
 
-提示框是hover一些元素时弹出的小框，用于提示该元素的作用。提示框类是`ds-tt`。提示框的`z-index`为`999`。
+提示框（Tooltip）是hover一些元素时弹出的小框，用于提示该元素的作用。提示框类是`ds-tt`。提示框的`z-index`为`999`。
 
 ### 新建
 
@@ -63,14 +59,15 @@ MoreWindows，一个oink的组件，提供了网页overlay层上的几乎一切�
 
 ```html
 <span necessary>
-    <span class="ds-tt">tip content</span>
-    main text content
-</span>
+    <div class="ds-tt">tip content</div>
+    main content
+    <div></span>
+</div>
 ```
 
-`necessary`是必须的，它规定了能产生提示框的区域。
+`necessary`是必须的，它规定了能产生提示框的区域。如果在块级元素中，则应使用`<div>`。如果在行内元素中，则应使用`<span>`，但是不推荐在行内元素中使用提示框。
 
-**重要提示**：`<span class="ds-tt">`必须位于`main text content`前！否则将会导致提示框出现对齐问题！
+**提示**：`< class="ds-tt">`必须位于`main content`前！否则将会导致提示框出现对齐问题！
 
 ### 属性表
 
@@ -78,7 +75,7 @@ MoreWindows，一个oink的组件，提供了网页overlay层上的几乎一切�
 |:----------------------:|:----------------------------------:|:------:|
 | `ds-tt`                | 定义一个提示框                            | 必需     |
 | `ds-toolpar`           | **自动生成的**父元素标记                     | 必有     |
-| `ds-tt-gra`            | 渐变动画显示                             | 不渐变显示  |
+| `ds-tt-gra`            | 渐变显示                               | 不渐变显示  |
 | `ds-tt-<t\|b\|l\|r>`   | 控制提示框的显示位置，`t`=上，`b`=下，`l`=左，`r`=右 | 二选一(1) |
 | `ds-tt-<t\|b\|l\|r>-t` | 显示三角形“气泡”效果                        | 二选一(1) |
 
