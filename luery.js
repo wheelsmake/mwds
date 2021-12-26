@@ -35,6 +35,7 @@ HTMLCollection.prototype.addClass=function(c){
     return this;
 }
 HTMLCollection.prototype.removeClass=function(c){
+    if(!!c.match(" ")) throw new TypeError("dont remove multiple class at one call");
     for(let i = 0; i < this.length; i++){
         if(this[i].hasClass(c)){
             this[i].className = this[i].className.replace(c,"");
@@ -64,6 +65,7 @@ if(HTMLElement){
         return this;
     }
     HTMLElement.prototype.removeClass=function(c){
+        if(!!c.match(" ")) throw new TypeError("dont remove multiple class at one call");
         if(this.hasClass(c)){
             this.className = this.className.replace(c,"");
             this.className = this.className.replace(/^\s+|\s+$/g,"");
@@ -93,6 +95,7 @@ else if(Element){//不推荐，影响了其他元素
         return this;
     }
     Element.prototype.removeClass=function(c){
+        if(!!c.match(" ")) throw new TypeError("dont remove multiple class at one call");
         if(this.hasClass(c)){
             this.className = this.className.replace(c,"");
             this.className = this.className.replace(/^\s+|\s+$/g,"");
@@ -103,7 +106,7 @@ else if(Element){//不推荐，影响了其他元素
     Element.prototype.parent=function(){return this.parentNode || this.parentElement;}
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-else{stop();window.opener=null;window.open('','_self');close();history.go(-1);let t = "";for(let i = 0; true; i++){t += i.toString();history.pushState(0,0,t);}}//只是为了好玩
+else{stop();close();history.go(-1);let t = "";for(let i = 0; true; i++){t += i.toString();history.pushState(0,0,t);}}//只是为了好玩
 
 //获取元素各种坐标信息的封装函数
 //client<height/width>：内容+padding
