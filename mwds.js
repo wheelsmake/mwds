@@ -69,7 +69,7 @@ function setZ(o,isP,p){//p可以是负数！
 
     //窗口越界检测
 function checkPos(o){//上和左比下和右更重要，所以放在最后
-    if(tt(o,"fr") > document.body.scrollWidth) o.css("left",document.body.scrollWidth - tt(o,"w") + "px");//此处不考虑横向滚动条，因此absolute元素也不能拖到右边去
+    if(tt(o,"fr") > document.body.clientWidth) o.css("left",document.body.clientWidth - tt(o,"w") + "px");//此处不考虑横向滚动条，因此absolute元素也不能拖到右边去
     if(tt(o,"fb") > innerHeight && !o.hasClass("ds-a")) o.css("top",innerHeight - tt(o,"h") + "px");
     if(tt(o,"fl") < 0) o.css("left",0);
     if(tt(o,"ft") < 0) o.css("top",0);
@@ -254,20 +254,34 @@ function alignToolTip(tp){
     if(t.hasClass("ds-tt-t") || t.hasClass("ds-tt-b") || t.hasClass("ds-tt-t-t") || t.hasClass("ds-tt-b-t")) t.css("margin-left",Math.round((tt(tp,"pw") - tt(t,"w")) / 2) + "px");
     //对于浮动在左右的tooltip需要上下对齐（1/2高度）
     else if(t.hasClass("ds-tt-l") || t.hasClass("ds-tt-r") || t.hasClass("ds-tt-l-t") || t.hasClass("ds-tt-r-t")) t.css("margin-top",Math.round((tt(tp,"ph") - tt(t,"h")) / 2) + "px");
-    //
-    if(tt(t,"fr") > document.body.scrollWidth) t.removeClass("ds-tt-")
-    if(tt(o,"fb") > innerHeight) 
-    if(tt(o,"fl") < 0) 
-    if(tt(o,"ft") < 0) 
+    //智能显示
+    if(tt(t,"fr") > document.body.clientWidth) toolTipC("r","l",t);
+    if(tt(t,"fb") > innerHeight) toolTipC("b","t",t);
+    if(tt(t,"fl") < 0) toolTipC("l","r",t);
+    if(tt(t,"ft") < 0) toolTipC("t","b",t);
+}
+
+    //辅助智能显示fixme:指定原始的样式，一旦特殊情况结束则返回原始样式
+function toolTipC(s,g,o){
+    console.log("a");
+    if(o.hasClass("ds-tt-" + s)){
+        o.removeClass("ds-tt-" + s);
+        o.addClass("ds-tt-" + g);
+    }
+    else if(o.hasClass("ds-tt-" + s + "-t")){
+        o.removeClass("ds-tt-" + s + "-t");
+        o.addClass("ds-tt-" + g + "-t");
+    }
+    else{
+        console.log("???");
+    }
+    alignToolTip(o);
 }
 //end提示框
 
 //fixpos
     //todo:
 function fixpos(){
-
-}
-function showFixpos(){
 
 }
 //endfixpos

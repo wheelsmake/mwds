@@ -26,7 +26,8 @@ body{
     box-shadow: 0 .4em .9em 0 #00000033;
     /*兼容没有box-shadow的IE9以下*/
     border: solid .3px #00000010;
-    will-change: top, left;
+    /*will-change会影响内部元素的position:fixed，并且确实没有什么作用*/
+    /*will-change: top, left;*/
     border-radius: 5px;
     background-color: white;
     padding: .5em .8em .5em .8em;
@@ -61,8 +62,8 @@ body{
     /*z-index不可更改*/
     z-index: 999 !important;
     text-align: center;
-    border-radius: .25rem;
-    font-size: .6rem;
+    border-radius: .5em;
+    font-size: .75em;
     color: whitesmoke;
     padding: .4em .9em .5em .9em;
     background-color: lightslategray;
@@ -81,11 +82,11 @@ body{
 }
 .ds-tt-l,.ds-tt-l-t{
     right: 105%;
-    min-width: 50px;
+    min-width: 4em;
 }
 .ds-tt-r,.ds-tt-r-t{
     left: 105%;
-    min-width: 50px;
+    min-width: 4em;
 }
 .ds-tt-t-t::after{
     position: inherit;

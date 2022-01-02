@@ -110,13 +110,11 @@ IE9以下无`box-shadow`，使用`border`进行了兼容。可自行更改。（
 <div class="ds-fixpos" data-ds-fixpos="id-1 id-2 id-3“></div>
 ```
 
-若一固定栏的`position`不为`static`，则需要指定`top`或`bottom`、`left`或`right`。
-
 对`ds-fixpos`的样式表进行编辑即可自定义其样式，不过请注意`/*<某属性>不可更改*/`的注释，更改这些属性可能导致难以预料的问题出现。
 
 ### 行为
 
-当鼠标指针进入`ds-fixpos`区域时，它会显示并引导松开鼠标，若在`ds-fixpos`区域内松开鼠标，则窗口将锚定至`ds-fixpos`区域内，其`height`和`width`与`ds-fixpos`一致。窗口仍然可以随时被拖动，并可脱离`ds-fixpos`。
+当鼠标指针进入`ds-fixpos`区域时，它会显示并引导松开鼠标，若在`ds-fixpos`区域内松开鼠标，则窗口将固定至`ds-fixpos`区域内，成为`ds-fixpos`的子元素。当固定在`ds-fixpos`中的窗口被重新拖出来，它会**默认被放置到`body`的文档流起始点**，相当于`document.body.prepend`。
 
 ### 属性表
 
@@ -125,4 +123,3 @@ IE9以下无`box-shadow`，使用`border`进行了兼容。可自行更改。（
 | `ds-fixpos` | 定义一个固定栏 |      | 必需 |
 
 ### 极端情况
-
