@@ -200,7 +200,7 @@ function tOrb(a, b){
     }else return "e";//根本就没覆盖
 }
 
-    //dark名鼎鼎的zIndex方法 fixme:搞完了，但还是有点问题，4-3L时由于没有记录相对位置仍然会出现问题，解决方案：先把非e记录进数组再按zindex执行递归
+    //dark名鼎鼎的zIndex方法 fixme:搞完了，但还是有点问题，4-3L时由于没有记录相对位置仍然会出现问题，可能的解决方案：先把非e记录进数组再按zindex执行递归
 function zIndex(o){
     setZ(o,false,50);
     for(let i = 0; i < winlist.length; i++){
