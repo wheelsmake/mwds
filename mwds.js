@@ -265,6 +265,7 @@ function alignToolTip(tp){
 function toolTipC(s,g,o){
     console.log("a");
     if(o.hasClass("ds-tt-" + s)){
+        o.setAttribute("data-tt-o",s);
         o.removeClass("ds-tt-" + s);
         o.addClass("ds-tt-" + g);
     }
@@ -282,18 +283,21 @@ function toolTipC(s,g,o){
 //fixpos
     //todo:
 function fixpos(){
-
+    //note:这里先不做，先去做更有意义的事
 }
 //endfixpos
 
 //弹出框
     //todo:遮罩创建
 function createMask(){
-
+    console.log("a");
+    let e = document.createElement("div");
+    e.id = "overlay";
+    document.body.prepend(e);
 }
     //显示
-function showPopOut(){
-
+function showPopOut(d){
+    $("#overlay").css("z-index","2147483647").append(d);
 }
     //隐藏
 function hidePopOut(){
