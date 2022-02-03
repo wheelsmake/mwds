@@ -1,60 +1,17 @@
 ﻿/* 框架目标：10KB！！！
  * 为了防止压缩代码时破坏代码，我没有开启变量缩短选项，而是在代码中使用简短的字符变量“手动”压缩代码，同时保留重要变量的长名称。
  * Herobrine保佑 永不出bug
- * mwds.js
- *  │
- *  ├---公共变量区（移动相关、所有窗口数组`winlist`）
- *  │
- *  ├-┬-公共函数/方法区
- *  │ │
- *  │ ├---z-index获取与修改
- *  │ └---`checkPos`窗口越界检测
- *  │
- *  ├---视口变化时`checkPos`
- *  ├---窗口移动相关
- *  ├---`ds-cls`可关闭窗口相关
- *  ├---overlay创建
- *  ├---tooltip相关
- *  │
- *  ├-┬-窗口移动处理
- *  │ │
- *  │ ├---按下处理（2个）
- *  │ ├---获取全局最大z-index（`zinmax`）
- *  │ ├---移动中处理
- *  │ ├---松开处理
- *  │ └---递归删除没用style（`delStyle`）
- *  │
- *  ├-┬-窗口提升
- *  │ │
- *  │ ├---检测覆盖&层级关系`tOrb`
- *  │ └---主算法`zIndex`
- *  │
- *  ├-┬-`ds-cls`可关闭窗口相关
- *  │ │
- *  │ ├---自动添加tooltip提示可关闭
- *  │ └---关闭窗口的主方法
- *  │
- *  ├-┬-提示框（tooltip）
- *  │ │
- *  │ ├---给tooltip父节点添加标记
- *  │ └---对齐提示框
- *  │
- *  ├-┬-锚定位置（fixpos）
- *  | |
- *  | ├---给tooltip父节点添加标记
- *  |
- *  |
- *  ├-┬-弹出框
- * 
- * 
  */
 console.log("mwds.js - MoreWindows ©LJM12914\r\noink组件。 https://github.com/openink/mwds");
+//配置区
+var enableDropDown = true;//是否启用自定义菜单，默认true（启用），设为false即可使用浏览器默认右键菜单
 //公共变量区
     //移动相关
 var ismoving = false;
 var dtop, dleft, move;
     //全局窗口数组
 var winlist = $(".ds-win");
+var overlay = $("#ds-overlay");
 //end公共变量区
 //公共函数/方法区
     //快速获取z-index
@@ -199,7 +156,7 @@ function tOrb(a, b){
         else return "s";//两个一样
     }else return "e";//根本就没覆盖
 }
-
+//todo:ds-ontop 窗口置顶
     //dark名鼎鼎的zIndex方法 fixme:搞完了，但还是有点问题，4-3L时由于没有记录相对位置仍然会出现问题，可能的解决方案：先把非e记录进数组再按zindex执行递归
 function zIndex(o){
     setZ(o,false,50);
@@ -219,7 +176,7 @@ function zIndex(o){
     //给ds-cls自动安排tooltip
 function clsAddToolTip(){
     let c = document.createElement("div");
-    c.addClass("ds-tt ds-tt-gra ds-tt-l-t");
+    c.addClass("ds-tt ds-tt-l-t");
     c.innerText = "在空闲区域双击可关闭窗口";
     let a = $(".ds-cls");
     for(let i = 0; i < a.length; i++) a[i].innerHTML = c.outerHTML + a[i].innerHTML;
@@ -263,7 +220,6 @@ function alignToolTip(tp){
 
     //辅助智能显示fixme:指定原始的样式，一旦特殊情况结束则返回原始样式
 function toolTipC(s,g,o){
-    console.log("a");
     if(o.hasClass("ds-tt-" + s)){
         o.setAttribute("data-tt-o",s);
         o.removeClass("ds-tt-" + s);
@@ -290,24 +246,45 @@ function fixpos(){
 //弹出框
     //todo:遮罩创建
 function createMask(){
-    console.log("a");
+    if(overlay) return;
     let e = document.createElement("div");
-    e.id = "overlay";
+    e.id = "ds-overlay";
     document.body.prepend(e);
+    overlay = $("#ds-overlay");
 }
-    //显示
-function showPopOut(d){
-    $("#overlay").css("z-index","2147483647").append(d);
+function testPopUp(){
+    let d = document.createElement("div");
+    d.innerHTML = "aaaaaaaaaa<br /><br />aaaaaaaaaaaaaaa<br />aaaaaaa<br />aaaaaa<br />aaaaaaaaaaaaaaaaaa<br />aaaaa<br />a<br />aaaaaaaaaaaaaaaaaaaaa";
+    return showPopUp(d);
+}
+$("#ds-overlay").onclick = e=>{if(e.target.id == "ds-overlay"){
+    hidePopUp(overlay.children.length - 1);
+    if(!overlay.children.length) hidePopUp();
+}};
+    //显示，返回序号
+function showPopUp(d){
+    overlay.append(d);
+    return overlay.children.length - 1;
 }
     //隐藏
-function hidePopOut(){
-
+function hidePopUp(d){//传入序号！！！
+    const A = Array.from(overlay.children);
+    //console.log(a);
+    if(d === undefined){
+        overlay.innerHTML = "";
+        return A;
+    }
+    else{
+        overlay.removeChild(A[d]);
+        return A[d];
+    }
 }
 //end弹出框
 
 //菜单
-    //todo:
-    function dropDown(){
-
+    function showDropDown(obj){
+        if(!enableDropDown) return;//note:不改代码不可能出现这种情况
+        //todo:很简单，用鼠标位置和对象的
+        console.log("a");
     }
 //end菜单

@@ -5,27 +5,24 @@
     from{opacity: 0;}
     to{opacity: 1;}
 }
+@keyframes popup{
+    0%{transform: scale(.6);}
+    60%{transform: scale(1.04);}
+    100%{transform: unset;}
+}
 *{
-    /*outline建议生产时注释掉*/
     outline: none;
     /*cursor不可更改*/
     cursor: initial;
 }
-html{
-    font-size: 16px;
-}
+html{font-size: 16px;}
 /*body建议生产时注释掉*/
 body{
     margin: 0;
     overflow-x: hidden;
     overflow-y: auto;
 }
-.ds-win{
-    /*position不可更改*/
-    position: fixed !important;
-    /*z-index不可更改*/
-    z-index: 50;
-    animation: gin .5s ease-out;
+.ds-win,#ds-overlay > *{
     box-shadow: 0 .4rem .9rem 0 #00000033;
     /*兼容没有box-shadow的IE9以下*/
     border: solid .0625rem #00000010;
@@ -35,14 +32,15 @@ body{
     background-color: white;
     padding: .5em .8em .5em .8em;
 }
-.ds-a{
+.ds-win{
     /*position不可更改*/
-    position: absolute !important;
+    position: fixed !important;
+    /*z-index不可更改*/
+    z-index: 50;
+    animation: gin .5s ease-out;
 }
-.ds-mov{
-    /*cursor不可更改*/
-    cursor: grab;
-}
+.ds-a{position: absolute !important;}
+.ds-mov{cursor: grab;}
 .ds-tra{
     background-color: #ffffff00;
     transition: background-color .2s ease-in-out;
@@ -50,45 +48,31 @@ body{
     -moz-transition: background-color .2s ease-in-out;
     -webkit-transition: background-color .2s ease-in-out;
 }
-.ds-tra:hover{
-    background-color: white;
-}
-.ds-tp{
-    /*position不可更改*/
-    position: relative;
-}
+.ds-tra:hover{background-color: white;}
+.ds-tp{/*position不可更改*/position: relative;}
 .ds-tt{
     /*position不可更改*/
     position: absolute !important;
-    /*opacity不可更改*/
-    opacity: 0;
+    /*display不可更改*/
+    display: none;
     /*z-index不可更改*/
     z-index: 999 !important;
     text-align: center;
-    border-radius: .5em;
+    border-radius: .4em;
     font-size: .75em;
     color: whitesmoke;
-    padding: .4em;
+    padding: .5em;
     background-color: lightslategray;
+    opacity: 0;
 }
-.ds-tt-gra{
-    transition: opacity .1s ease-out;
-    -o-transition: opacity .1s ease-out;
-    -moz-transition: opacity .1s ease-out;
-    -webkit-transition: opacity .1s ease-out;
-}
-.ds-tt-t,.ds-tt-t-t{
-    bottom: 108%;
-}
-.ds-tt-b,.ds-tt-b-t{
-    top: 108%;
-}
+.ds-tt-t,.ds-tt-t-t{bottom: calc(100% + .5rem);}
+.ds-tt-b,.ds-tt-b-t{top: calc(100% + .5rem);}
 .ds-tt-l,.ds-tt-l-t{
-    right: 105%;
+    right: calc(100% + .8rem);
     min-width: 8ch;
 }
 .ds-tt-r,.ds-tt-r-t{
-    left: 105%;
+    left: calc(100% + .8rem);
     min-width: 8ch;
 }
 .ds-tt-t-t::after{
@@ -132,10 +116,11 @@ body{
     border-color: transparent lightslategray transparent transparent;
 }
 :hover > .ds-tt{
-    /*opacity不可更改*/
+    /*display不可更改*/
+    display: block;
     opacity: 0.92;
 }
-#overlay{
+#ds-overlay{
         height: 100%;
     height: 100vh;
         width: 100%;
@@ -145,7 +130,17 @@ body{
     top: 0;
     left: 0;
     z-index: -1;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    transition: background-color .2s ease-in-out;
 }
-#overlay > *{
-
+#ds-overlay:not(:empty){
+    background-color: #00000066;
+    z-index: 9999999;
+}
+#ds-overlay > *{
+    align-self: center;
+    animation: popup .15s ease-in-out;
+    position: fixed;
 }
