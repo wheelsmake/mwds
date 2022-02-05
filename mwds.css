@@ -2,34 +2,43 @@
  * oink组件。https://github.com/openink/mwds
  */
 @keyframes gin{
-    from{opacity: 0;}
-    to{opacity: 1;}
+    0%{opacity: 0;}
+    100%{opacity: unset;}
 }
 @keyframes popup{
     0%{transform: scale(.6);}
-    60%{transform: scale(1.04);}
+    60%{transform: scale(1.02);}
     100%{transform: unset;}
 }
+@keyframes popin{
+    0%{
+        transform: scale(.95);
+        opacity: 0;
+    }
+    60%{
+        transform: scale(1.01);
+        opacity: 1;
+    }
+    100%{transform: unset;}
+}
+@keyframes ontop{0%,100%{z-index: 999;}}
 *{
-    outline: none;
     /*cursor不可更改*/
     cursor: initial;
 }
-html{font-size: 16px;}
-/*body建议生产时注释掉*/
 body{
+    overflow: auto;
     margin: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
 }
-.ds-win,#ds-overlay > *{
-    box-shadow: 0 .4rem .9rem 0 #00000033;
+html{font-size: 16px;}
+.ds-win{box-shadow: 0 .25rem .9rem .0625rem #00000033;}
+.ds-win,#ds-overlay > *,.ds-dd{
     /*兼容没有box-shadow的IE9以下*/
     border: solid .0625rem #00000010;
     /*will-change会影响内部元素的position:fixed，并且确实没有什么作用*/
     /*will-change: top, left;*/
     border-radius: .3125rem;
-    background-color: white;
+    background-color: #fff;
     padding: .5em .8em .5em .8em;
 }
 .ds-win{
@@ -48,7 +57,12 @@ body{
     -moz-transition: background-color .2s ease-in-out;
     -webkit-transition: background-color .2s ease-in-out;
 }
-.ds-tra:hover{background-color: white;}
+.ds-tra:hover{background-color: #fff;}
+.ds-ontop{
+    z-index: 999 !important;
+    animation: ontop 12914s infinite;
+    border-color: cornflowerblue;
+}
 .ds-tp{/*position不可更改*/position: relative;}
 .ds-tt{
     /*position不可更改*/
@@ -56,14 +70,15 @@ body{
     /*display不可更改*/
     display: none;
     /*z-index不可更改*/
-    z-index: 999 !important;
+    z-index: inherit;
     text-align: center;
     border-radius: .4em;
     font-size: .75em;
-    color: whitesmoke;
+    color: #f5f5f5;
     padding: .5em;
-    background-color: lightslategray;
+    background-color: #778899;
     opacity: 0;
+    animation: gin .15s ease-in-out;
 }
 .ds-tt-t,.ds-tt-t-t{bottom: calc(100% + .5rem);}
 .ds-tt-b,.ds-tt-b-t{top: calc(100% + .5rem);}
@@ -75,45 +90,35 @@ body{
     left: calc(100% + .8rem);
     min-width: 8ch;
 }
-.ds-tt-t-t::after{
+.ds-tt-t-t::after,.ds-tt-b-t::after,.ds-tt-l-t::after,.ds-tt-r-t::after{
     position: inherit;
     content: "";
+    border-width: .375rem;
+    border-style: solid;
+}
+.ds-tt-t-t::after{
     top: 100%;
     left: 50%;
     margin-left: -0.375rem;
-    border-width: .375rem;
-    border-style: solid;
-    border-color: lightslategray transparent transparent transparent;
+    border-color: #778899 transparent transparent transparent;
 }
 .ds-tt-b-t::after{
-    position: inherit;
-    content: "";
     bottom: 100%;
     left: 50%;
     margin-left: -0.375rem;
-    border-width: .375rem;
-    border-style: solid;
-    border-color: transparent transparent lightslategray transparent;
+    border-color: transparent transparent #778899 transparent;
 }
 .ds-tt-l-t::after{
-    position: inherit;
-    content: "";
     top: 50%;
     left: 100%;
     margin-top: -0.375rem;
-    border-width: .375rem;
-    border-style: solid;
-    border-color: transparent transparent transparent lightslategray;
+    border-color: transparent transparent transparent #778899;
 }
 .ds-tt-r-t::after{
-    position: inherit;
-    content: "";
     top: 50%;
     right: 100%;
     margin-top: -0.375rem;
-    border-width: .375rem;
-    border-style: solid;
-    border-color: transparent lightslategray transparent transparent;
+    border-color: transparent #778899 transparent transparent;
 }
 :hover > .ds-tt{
     /*display不可更改*/
@@ -121,9 +126,7 @@ body{
     opacity: 0.92;
 }
 #ds-overlay{
-        height: 100%;
     height: 100vh;
-        width: 100%;
     width: 100vw;
     background-color: transparent;
     position: fixed;
@@ -134,13 +137,46 @@ body{
     flex-flow: column nowrap;
     justify-content: center;
     transition: background-color .2s ease-in-out;
+    pointer-events: auto;
 }
 #ds-overlay:not(:empty){
     background-color: #00000066;
-    z-index: 9999999;
+    z-index: 9999;
 }
 #ds-overlay > *{
     align-self: center;
     animation: popup .15s ease-in-out;
     position: fixed;
 }
+.ds-dd,#ds-overlay > *{box-shadow: 0 .25rem 1.5rem .25rem #00000044;}
+.ds-dd{
+    /*position不可更改*/
+    display: none;
+    position: fixed;
+    z-index: 99999;
+    padding: .5em 0;
+    transition: top .2s ease-in-out,left .2s ease-in-out;
+    font-size: .96rem;
+    animation: popin .15s ease-in-out;
+}
+.ds-dd > ul{
+    margin: 0;
+    padding: 0;
+    display: flex;
+    list-style-type: none;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+}
+.ds-dd > ul > li{
+    padding: .25em .5em;
+    cursor: pointer;
+    transition: background-color .1s ease-in-out;   
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        -ms-touch-select: none;
+        -moz-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+.ds-dd > ul > li:hover{background-color: #00000012;}
+.ds-dd > ul > li:active{background-color: #00000020;}
