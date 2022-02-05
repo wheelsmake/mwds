@@ -39,7 +39,8 @@ function checkWinPos(o){//上和左比下和右更重要，所以放在最后
     if(tt(o,"fr") > document.body.clientWidth) o.css("left",document.body.clientWidth - tt(o,"w") + "px");//此处不考虑横向滚动条，因此absolute元素也不能拖到右边去
     if(tt(o,"fb") > innerHeight && !o.hasClass("ds-a")) o.css("top",innerHeight - tt(o,"h") + "px");
     if(tt(o,"fl") < 0) o.css("left",0);
-    if(tt(o,"ft") < 0) o.css("top",0);
+    if(tt(o,"ft") < 0 && !o.hasClass("ds-a")) o.css("top",0);//fixed:2022.2.5 ds-a被移动到视口最上方时闪至top:0px，下同
+    if(tt(o,"t") < 0)  o.css("top",0);
 }
 //end公共函数/方法区
 
@@ -47,8 +48,9 @@ function checkWinPos(o){//上和左比下和右更重要，所以放在最后
     //杂项
         //防止有人在classlist里写ds-zin锁窗口
 $("*").removeClass("ds-zin");
-        //防止窗口变化时超限
-window.addEventListener("resize",()=>{for(let i = 0; i < winlist.length; i++){checkWinPos(winlist[i])}});
+        //防止窗口超限
+for(let i = 0; i < winlist.length; i++) checkWinPos(winlist[i]);
+window.addEventListener("resize",()=>{for(let i = 0; i < winlist.length; i++) checkWinPos(winlist[i]);});
 
     //可关闭的窗口初始化
 clsAddToolTip();//给ds-cls添加提示框（必须放在toolTipIni()之前执行）
@@ -314,38 +316,36 @@ registerDropDown($("*"),$("#testdd"));
 registerDropDown($(".ds-win"),$("#testddd"));
 
     //点击菜单任意子元素后关闭所有菜单
-
-//$Events($(".ds-dd"),"click",e=>{if(!e.target.hasClass("ds-dd")) closeDropDown();});
-$Events($(".ds-dd"),"mousedown",e=>{
-    if(!e.target.hasClass("ds-dd")) closeDropDown();
-});
+$Events($(".ds-dd"),"mousedown",e=>{pressedMenuItem = e.target;});
 $Events($(".ds-dd"),"mouseup",e=>{
-    if(!e.target.hasClass("ds-dd")) closeDropDown();//todo:
+    if(pressedMenuItem === e.target) closeDropDown();
+    pressedMenuItem = undefined;
 });
 
     //菜单绑定
 function registerDropDown(er,ee,noPro){
     $Events(er,"contextmenu",e=>{
-        console.log(e.target);
+        //closeDropDown();//当从多菜单的元素转移至少菜单的元素时，多余的菜单就地关闭，以免卡在那 //fixme:这样做会造成bug，不知道为何
+        //console.log(e.target);
         if(noPro && checkProp(e.target)) return;
         e.preventDefault();
         ee.css("display","block");
         for(let i = 0; i < 12914; i++){//反正绝对不可能超过10次就出去了，不管这里是多少了
             if(ee.hasClass("ds-dd-bl")){
-                DDTop = e.pageY + 10;
-                DDleft = e.pageX - tt(ee,"w") - 10;
+                DDTop = e.clientY + 10;
+                DDleft = e.clientX - tt(ee,"w") - 10;
             }
             else if(ee.hasClass("ds-dd-tr")){
-                DDTop = e.pageY - tt(ee,"h") - 10;
-                DDleft = e.pageX + 10;
+                DDTop = e.clientY - tt(ee,"h") - 10;
+                DDleft = e.clientX + 10;
             }
             else if(ee.hasClass("ds-dd-tl")){
-                DDTop = e.pageY - tt(ee,"h") - 10;
-                DDleft = e.pageX - tt(ee,"w") - 10;
+                DDTop = e.clientY - tt(ee,"h") - 10;
+                DDleft = e.clientX - tt(ee,"w") - 10;
             }
             else{//ds-dd-br，默认
-                DDTop = e.pageY + 10;
-                DDleft = e.pageX + 10;
+                DDTop = e.clientY + 10;
+                DDleft = e.clientX + 10;
             }
             if(checkDropDownPos()){
                 ee.css("top",DDTop + "px");//JSON对象不允许插值，只能分开
