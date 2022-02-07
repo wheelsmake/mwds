@@ -26,7 +26,6 @@
 body{
     overflow: auto;
     margin: 0;
-    font-family: Nunito, "Segoe UI";
 }
 html{font-size: 16px;}
 .ds-win,#ds-overlay > *,.ds-dd{
@@ -166,7 +165,6 @@ html{font-size: 16px;}
     list-style-type: none;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    pointer-events: initial;
 }
 .ds-dd > ul > li{
     padding: .3em .5em;

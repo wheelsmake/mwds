@@ -97,33 +97,33 @@ function processMutation(l){
     //事件注册
 function registerEvents(){
     //通用
-    $Events($("*"),"mousedown",e=>{
+    $.Events($("*"),"mousedown",e=>{
         checkCloseDropDown(e,true);
         checkWinPress(false,e);
     });
-    $Events($("*"),"mousemove",e=>{moveWindows(false,e);});
-    $Events($("*"),"mouseup",e=>{
+    $.Events($("*"),"mousemove",e=>{moveWindows(false,e);});
+    $.Events($("*"),"mouseup",e=>{
         checkCloseDropDown(e,false);
         moveUp();
     });
-    $Events($("*"),"touchstart",e=>{checkWinPress(true,e);});
-    $Events($("*"),"touchmove",e=>{moveWindows(true,e)});
-    $Events($("*"),"touchend",e=>{moveUp();});
+    $.Events($("*"),"touchstart",e=>{checkWinPress(true,e);});
+    $.Events($("*"),"touchmove",e=>{moveWindows(true,e)});
+    $.Events($("*"),"touchend",e=>{moveUp();});
     //$Events($("*"),"click",e=>{});
     //移动
-    $Events($(".ds-mov"),"mousedown",e=>{pressOnWin(false,e);});
-    $Events($(".ds-mov"),"touchstart",e=>{pressOnWin(true,e);});
+    $.Events($(".ds-mov"),"mousedown",e=>{pressOnWin(false,e);});
+    $.Events($(".ds-mov"),"touchstart",e=>{pressOnWin(true,e);});
     //可关闭窗口
-    $Events($(".ds-cls"),"dblclick",e=>{closeCls(false,e);});
+    $.Events($(".ds-cls"),"dblclick",e=>{closeCls(false,e);});
     //fixme:这里由于子节点的touchstart传不上来，无法在触摸屏点击窗口内容时出现提示。
-    $Events($(".ds-cls"),"touchstart",e=>{closeCls(true,e);});
+    $.Events($(".ds-cls"),"touchstart",e=>{closeCls(true,e);});
     //提示框
-    $Events($(".ds-tp"),"mouseover",e=>{alignToolTip(e.target);});
-    $Events($(".ds-tp"),"touchstart",e=>{alignToolTip(e.target);}); 
+    $.Events($(".ds-tp"),"mouseover",e=>{alignToolTip(e.target);});
+    $.Events($(".ds-tp"),"touchstart",e=>{alignToolTip(e.target);}); 
     //菜单
     //点击菜单任意子元素后关闭所有菜单，ds-nocls除外
-    $Events($(".ds-dd"),"mousedown",e=>{pressedMenuItem = e.target;});
-    $Events($(".ds-dd"),"mouseup",e=>{
+    $.Events($(".ds-dd"),"mousedown",e=>{pressedMenuItem = e.target;});
+    $.Events($(".ds-dd"),"mouseup",e=>{
         if(pressedMenuItem === e.target && !e.target.hasClass("ds-dd") && !e.target.getParentByClass("ds-dd").hasClass("ds-nocls") && !e.button) closeDropDown();
         pressedMenuItem = undefined;
     });
@@ -353,7 +353,7 @@ function hidePopUp(d){//传入序号！！！
 function registerDropDown(er,ee,noPro){
     console.log("a");
     let t, l;
-    $Events(er,"contextmenu",e=>{
+    $.Events(er,"contextmenu",e=>{
         //console.log(e.target,er);
         if(noPro && checkDDProp(e.target)) return;
         e.preventDefault();

@@ -1,5 +1,3 @@
-简体中文 | English(Under Development)
-
 # MoreWindows
 
 MoreWindows，一个oink的组件，提供了网页overlay层上的几乎一切功能：悬浮窗、菜单、弹出框、提示框、消息框……
