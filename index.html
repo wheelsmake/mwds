@@ -25,7 +25,7 @@
         </div>
         <div class="ds-win ds-tra ds-mov ds-ontop" id="first" style="top: 400px;">
             <span>first - ON TOP!!!!!!!!!</span>
-            <s>fsajfiwaicfwafcwea</s><br />
+            <s>fsaj<span id="www">fiwaicfwaf</span>cwea</s><br />
             按下Alt+Shift可以无视所有元素一律拖动。<br />
             <span>加上span就可以了</span>
             <button onclick="showPopUp(this)">测试</button>
@@ -74,4 +74,10 @@
     </body>
     <script src="../luery/luery.min.js"></script>
     <script src="mwds.js"></script>
+    <script>//测试区
+        //测试菜单注册
+    var mwds = new MWDS;
+    mwds.registerDropDown($("#content")[0],$("#testddd")[0]);
+    mwds.registerDropDown($("#third")[0],$("#testdd")[0]);
+    </script>
 </html>

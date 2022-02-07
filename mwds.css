@@ -3,12 +3,10 @@
  */
 @keyframes gin{
     0%{opacity: 0;}
-    100%{opacity: unset;}
 }
 @keyframes popup{
     0%{transform: scale(.6);}
     60%{transform: scale(1.02);}
-    100%{transform: unset;}
 }
 @keyframes popin{
     0%{
@@ -19,7 +17,6 @@
         transform: scale(1.01);
         opacity: 1;
     }
-    100%{transform: unset;}
 }
 @keyframes ontop{0%,100%{z-index: 999;}}
 *{
@@ -29,6 +26,7 @@
 body{
     overflow: auto;
     margin: 0;
+    font-family: Nunito, "Segoe UI";
 }
 html{font-size: 16px;}
 .ds-win,#ds-overlay > *,.ds-dd{
@@ -168,6 +166,7 @@ html{font-size: 16px;}
     list-style-type: none;
     flex-flow: column nowrap;
     justify-content: flex-start;
+    pointer-events: initial;
 }
 .ds-dd > ul > li{
     padding: .3em .5em;
