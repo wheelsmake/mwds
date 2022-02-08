@@ -128,7 +128,7 @@ html{font-size: 16px;}
     position: fixed;
     top: 0;
     left: 0;
-    z-index: -1;
+    pointer-events: none;
     display: flex;
     flex-flow: column nowrap;
     justify-content: center;
@@ -136,7 +136,7 @@ html{font-size: 16px;}
 }
 #ds-overlay:not(:empty){
     background-color: #00000066;
-    z-index: 9999;
+    pointer-events: all;
 }
 #ds-overlay > *{
     position: fixed;
