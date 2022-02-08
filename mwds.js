@@ -1,10 +1,10 @@
-﻿/* 为了防止压缩代码时破坏代码，我没有开启变量缩短选项，而是在代码中使用简短的字符变量“手动”压缩代码，同时保留重要变量的长名称。
+﻿"use strict";
+var MWDS = function(){
+/* 为了防止压缩代码时破坏代码，我没有开启变量缩短选项，而是在代码中使用简短的字符变量“手动”压缩代码，同时保留重要变量的长名称。
  * 不用担心，看得懂的
  * Herobrine保佑 永不出bug
  */
-"use strict";
 console.log("mwds.js - MoreWindows ©LJM12914\r\noink组件。 https://github.com/openink/mwds");
-var MWDS = (function(){
 //全局变量区
     //遮罩
 var overlay = $("#ds-overlay")[0],
@@ -36,11 +36,11 @@ function setZ(o,isP,p){//p可以是负数！
 
     //窗口越界检测
 function checkWinPos(o){//上和左比下和右更重要，所以放在最后
-    if(tt(o,"fr") > document.body.clientWidth) o.css("left",document.body.clientWidth - tt(o,"w") + "px");//此处不考虑横向滚动条，因此absolute元素也不能拖到右边去
-    if(tt(o,"fb") > innerHeight && !o.hasClass("ds-a")) o.css("top",innerHeight - tt(o,"h") + "px");
-    if(tt(o,"fl") < 0) o.css("left",0);
-    if(tt(o,"ft") < 0 && !o.hasClass("ds-a")) o.css("top",0);//fixed:2022.2.5 ds-a被移动到视口最上方时闪至top:0px，下同
-    if(tt(o,"t") < 0)  o.css("top",0);
+    if($.tt(o,"fr") > document.body.clientWidth) o.css("left",document.body.clientWidth - $.tt(o,"w") + "px");//此处不考虑横向滚动条，因此absolute元素也不能拖到右边去
+    if($.tt(o,"fb") > innerHeight && !o.hasClass("ds-a")) o.css("top",innerHeight - $.tt(o,"h") + "px");
+    if($.tt(o,"fl") < 0) o.css("left",0);
+    if($.tt(o,"ft") < 0 && !o.hasClass("ds-a")) o.css("top",0);//fixed:2022.2.5 ds-a被移动到视口最上方时闪至top:0px，下同
+    if($.tt(o,"t") < 0)  o.css("top",0);
 }
 //end公共函数/方法区
 
@@ -148,12 +148,12 @@ function pressOnWin(isTouch, e){
         zinmax();
         isMoving = true;
         if(isTouch){
-            deltaTop = e.touches[0].pageY - tt(move,"t");
-            deltaLeft = e.touches[0].pageX - tt(move,"l");
+            deltaTop = e.touches[0].pageY - $.tt(move,"t");
+            deltaLeft = e.touches[0].pageX - $.tt(move,"l");
         }
         else{
-            deltaTop = e.pageY - tt(move,"t");
-            deltaLeft = e.pageX - tt(move,"l");
+            deltaTop = e.pageY - $.tt(move,"t");
+            deltaLeft = e.pageX - $.tt(move,"l");
         }
         $("*").css({"cursor":"grabbing","user-select":"none","-webkit-user-drag":"none","-webkit-user-select":"none"});
     }
@@ -202,14 +202,14 @@ function delStyle(d){
 //窗口提升
     //判断a在b上面还是下面+检测
 function tOrb(a, b){
-    let t = tt(a,"t");
-    let o = tt(a,"b");
-    let l = tt(a,"l");
-    let r = tt(a,"r");
-    let t1 = tt(b,"t");
-    let o1 = tt(b,"b");
-    let l1 = tt(b,"l");
-    let r1 = tt(b,"r");//fixed:不加等号会导致完全重叠在一起的窗口无法分离，已修复
+    let t = $.tt(a,"t");
+    let o = $.tt(a,"b");
+    let l = $.tt(a,"l");
+    let r = $.tt(a,"r");
+    let t1 = $.tt(b,"t");
+    let o1 = $.tt(b,"b");
+    let l1 = $.tt(b,"l");
+    let r1 = $.tt(b,"r");//fixed:不加等号会导致完全重叠在一起的窗口无法分离，已修复
     if(((t>=t1&&t<=o1)||(o>=t1&&o<=o1)||(t1>=t&&t1<=o)||(o1>=t&&o1<=o))&&((l>=l1&&l<=r1)||(r>=l1&&r<=r1)||(l1>=l&&l1<=r)||(r1>=l&&r1<=r))){//判断是否覆盖
         if(getZ(a) > getZ(b)) return "a";//a在上
         else if(getZ(a) < getZ(b)) return "b";//a在下
@@ -271,14 +271,14 @@ function alignToolTip(tp){
     let t = tp.querySelector(".ds-tt");//不管一个元素内含多个tooltip，note:由于不是document域，无法使用luery获取
     //toFixed()是为了防止渲染精度导致的tooltip随机抖动，偏差很小不要紧
     //对于浮动在上下的tooltip需要左右对齐（1/2宽度）
-    if(t.hasClass("ds-tt-t") || t.hasClass("ds-tt-b") || t.hasClass("ds-tt-t-t") || t.hasClass("ds-tt-b-t")) t.css("margin-left",((tt(tp,"pw") - tt(t,"w")) / 2).toFixed(2) + "px");
+    if(t.hasClass("ds-tt-t") || t.hasClass("ds-tt-b") || t.hasClass("ds-tt-t-t") || t.hasClass("ds-tt-b-t")) t.css("margin-left",(($.tt(tp,"pw") - $.tt(t,"w")) / 2).toFixed(2) + "px");
     //对于浮动在左右的tooltip需要上下对齐（1/2高度）
-    else if(t.hasClass("ds-tt-l") || t.hasClass("ds-tt-r") || t.hasClass("ds-tt-l-t") || t.hasClass("ds-tt-r-t")) t.css("margin-top",((tt(tp,"ph") - tt(t,"h")) / 2).toFixed(2) + "px");
+    else if(t.hasClass("ds-tt-l") || t.hasClass("ds-tt-r") || t.hasClass("ds-tt-l-t") || t.hasClass("ds-tt-r-t")) t.css("margin-top",(($.tt(tp,"ph") - $.tt(t,"h")) / 2).toFixed(2) + "px");
     //智能显示
-    if(tt(t,"fr") > document.body.clientWidth) checkToolTip("r","l",t);
-    if(tt(t,"fb") > innerHeight) checkToolTip("b","t",t);
-    if(tt(t,"fl") < 0) checkToolTip("l","r",t);
-    if(tt(t,"ft") < 0) checkToolTip("t","b",t);
+    if($.tt(t,"fr") > document.body.clientWidth) checkToolTip("r","l",t);
+    if($.tt(t,"fb") > innerHeight) checkToolTip("b","t",t);
+    if($.tt(t,"fl") < 0) checkToolTip("l","r",t);
+    if($.tt(t,"ft") < 0) checkToolTip("t","b",t);
 }
 
 //todo:important:warning:fixme:note:这里必须重构了，很混乱
@@ -294,16 +294,14 @@ function checkToolTip(s,g,o){
         o.removeClass("ds-tt-" + s + "-t");
         o.addClass("ds-tt-" + g + "-t");
     }
-    else{
-        console.log("???");
-    }
+    else console.log("???");
     alignToolTip(o);
 }
 //end提示框
 
 //固定栏
     //
-function fixpos(){
+var fixpos = this.fixpos = _=>{
     //note:这里先不做，先去做更有意义的事
 }
 //end固定栏
@@ -329,13 +327,13 @@ $("#ds-overlay")[0].ontouchend = $("#ds-overlay")[0].onmouseup = e=>{
 };
 
     //显示，返回序号
-function showPopUp(d){
+var showPopUp = this.showPopUp = d=>{
     overlay.append(d);
     return overlay.children.length - 1;
 }
 
     //隐藏
-function hidePopUp(d){//传入序号！！！
+var hidePopUp = this.hidePopUp = d=>{//传入序号！！！
     const A = Array.from(overlay.children);
     if(d === undefined){
         overlay.innerHTML = "";
@@ -350,8 +348,7 @@ function hidePopUp(d){//传入序号！！！
 
 //菜单
     //菜单绑定
-function registerDropDown(er,ee,noPro){
-    console.log("a");
+var registerDropDown = this.registerDropDown = (er,ee,noPro)=>{
     let t, l;
     $.Events(er,"contextmenu",e=>{
         //console.log(e.target,er);
@@ -361,15 +358,15 @@ function registerDropDown(er,ee,noPro){
         for(let i = 0; i < 12914; i++){//反正绝对不可能超过10次就出去了，不管这里是多少了
             if(ee.hasClass("ds-dd-bl")){
                 t = e.clientY + 10;
-                l = e.clientX - tt(ee,"w") - 10;
+                l = e.clientX - $.tt(ee,"w") - 10;
             }
             else if(ee.hasClass("ds-dd-tr")){
-                t = e.clientY - tt(ee,"h") - 10;
+                t = e.clientY - $.tt(ee,"h") - 10;
                 l = e.clientX + 10;
             }
             else if(ee.hasClass("ds-dd-tl")){
-                t = e.clientY - tt(ee,"h") - 10;
-                l = e.clientX - tt(ee,"w") - 10;
+                t = e.clientY - $.tt(ee,"h") - 10;
+                l = e.clientX - $.tt(ee,"w") - 10;
             }
             else{//ds-dd-br，默认
                 t = e.clientY + 10;
@@ -392,7 +389,7 @@ function registerDropDown(er,ee,noPro){
         //检查是否冒泡事件
     function checkDDProp(obj){
         if(er.toString().indexOf("Collection") != -1){
-            console.log("a");
+            //console.log("a");
             for(let i = 0; i < er.length; i++) if(er[i] === obj) return false;
             return true;
         }
@@ -425,17 +422,11 @@ function checkCloseDropDown(e,isDown){
 }
 
     //关闭菜单
-function closeDropDown(){
+var closeDropDown = this.closeDropDown = _=>{
     for(let i = 0; i < $(".ds-dd").length; i++){
         $(".ds-dd")[i].css({"display":"","top":"","left":""});
         if($(".ds-dd")[i].getAttribute("style") === "") $(".ds-dd")[i].removeAttribute("style");
     }
 }
 //end菜单
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//暴露函数区
-return{
-    
 }
-});

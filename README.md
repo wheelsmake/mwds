@@ -45,7 +45,7 @@ mwds在创建实例时会自动进行一些初始化操作。下文均使用`mwd
 
 ## 一、窗口
 
-### 新建
+### 新建（TODO）
 
 `mwds.addWin("")`。
 
@@ -77,7 +77,7 @@ mwds在创建实例时会自动进行一些初始化操作。下文均使用`mwd
 
 提示框（Tooltip）是hover一些元素时弹出的小框，用于提示该元素的作用。提示框类是`.ds-tt`。提示框的`z-index`为其产生区域的`z-index`，所以可能看不到提示框。
 
-### 新建
+### 新建（TODO）
 
 `mwds.appendToolTip(target, tooltip)`
 
