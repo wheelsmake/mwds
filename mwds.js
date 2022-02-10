@@ -7,7 +7,7 @@ var MWDS = function(){
 console.log("mwds.js - MoreWindows ©LJM12914\r\noink组件。 https://github.com/openink/mwds");
 //全局变量区
     //遮罩
-var overlay = $("#ds-overlay")[0],
+var overlay = $("#ds-overlay"),
     //弹出框删除flag
 isToClosePopUp = false,
     //窗口移动flag
@@ -20,7 +20,7 @@ pressedMenuItem,
     //窗口超限探测优化flag
 resizeTimer = null,
     //DOM变化监测
-MutationObserver, observer;
+observer;
 //end全局变量区
 
 //公共函数/方法区
@@ -68,7 +68,6 @@ toolTipIni();//给tooltip父节点添加标记
 registerEvents();
 
     //DOM变化监测
-MutationObserver = MutationObserver || WebKitMutationObserver || MozMutationObserver;
 observer = new MutationObserver(processMutation);
 observer.observe($("body")[0],{characterData:true,attributes:true,childList:true,subtree:true});
 //end初始化
@@ -111,22 +110,24 @@ function registerEvents(){
     $.Events($("*"),"touchend",e=>{moveUp();});
     //$Events($("*"),"click",e=>{});
     //移动
-    $.Events($(".ds-mov"),"mousedown",e=>{pressOnWin(false,e);});
-    $.Events($(".ds-mov"),"touchstart",e=>{pressOnWin(true,e);});
+    try{$.Events($(".ds-mov"),"mousedown",e=>{pressOnWin(false,e);});}catch(e){}//这里不需要抛异常，没有窗口要移动很正常，反而更轻松了
+    try{$.Events($(".ds-mov"),"touchstart",e=>{pressOnWin(true,e);});}catch(e){}
     //可关闭窗口
-    $.Events($(".ds-cls"),"dblclick",e=>{closeCls(false,e);});
+    try{$.Events($(".ds-cls"),"dblclick",e=>{closeCls(false,e);});}catch(e){}
     //fixme:这里由于子节点的touchstart传不上来，无法在触摸屏点击窗口内容时出现提示。
-    $.Events($(".ds-cls"),"touchstart",e=>{closeCls(true,e);});
+    try{$.Events($(".ds-cls"),"touchstart",e=>{closeCls(true,e);});}catch(e){}
     //提示框
-    $.Events($(".ds-tp"),"mouseover",e=>{alignToolTip(e.target);});
-    $.Events($(".ds-tp"),"touchstart",e=>{alignToolTip(e.target);}); 
+    try{$.Events($(".ds-tp"),"mouseover",e=>{alignToolTip(e.target);});}catch(e){}
+    try{$.Events($(".ds-tp"),"touchstart",e=>{alignToolTip(e.target);});}catch(e){}
     //菜单
     //点击菜单任意子元素后关闭所有菜单，ds-nocls除外
-    $.Events($(".ds-dd"),"mousedown",e=>{pressedMenuItem = e.target;});
-    $.Events($(".ds-dd"),"mouseup",e=>{
-        if(pressedMenuItem === e.target && !e.target.hasClass("ds-dd") && !e.target.getParentByClass("ds-dd").hasClass("ds-nocls") && !e.button) closeDropDown();
-        pressedMenuItem = undefined;
-    });
+    try{$.Events($(".ds-dd"),"mousedown",e=>{pressedMenuItem = e.target;});}catch(e){}
+    try{
+        $.Events($(".ds-dd"),"mouseup",e=>{
+            if(pressedMenuItem === e.target && !e.target.hasClass("ds-dd") && !e.target.getParentByClass("ds-dd").hasClass("ds-nocls") && !e.button) closeDropDown();
+            pressedMenuItem = undefined;
+        });
+    }catch(e){}
 }
 //end注册事件
 
@@ -186,7 +187,7 @@ function moveUp(){
     if(isMoving){
         isMoving = false;
         //zIndex(move); //由于某些玄学因素，这里不能zIndex，否则会使bug更多
-        delStyle($("html")[0]);
+        delStyle($("html"));
     }
 }
 
@@ -313,12 +314,12 @@ function createMask(){
     let e = document.createElement("div");
     e.id = "ds-overlay";
     document.body.prepend(e);
-    overlay = $("#ds-overlay")[0];
+    overlay = $("#ds-overlay");
 }
 
     //事件注册
-$("#ds-overlay")[0].ontouchstart = $("#ds-overlay")[0].onmousedown = e=>{isToClosePopUp = e.target.id == "ds-overlay"};
-$("#ds-overlay")[0].ontouchend = $("#ds-overlay")[0].onmouseup = e=>{
+$("#ds-overlay").ontouchstart = $("#ds-overlay").onmousedown = e=>{isToClosePopUp = e.target.id == "ds-overlay"};
+$("#ds-overlay").ontouchend = $("#ds-overlay").onmouseup = e=>{
     if(e.target.id == "ds-overlay" && isToClosePopUp && !e.button){//只有左键可以关闭了
         hidePopUp(overlay.children.length - 1);
         if(!overlay.children.length) hidePopUp();
@@ -401,6 +402,14 @@ var registerDropDown = this.registerDropDown = (er,ee,noPro)=>{
     }
 }
 
+    //关闭菜单
+var closeDropDown = this.closeDropDown = _=>{
+    for(let i = 0; i < $(".ds-dd").length; i++){
+        $(".ds-dd")[i].css({"display":"","top":"","left":""});
+        if($(".ds-dd")[i].getAttribute("style") === "") $(".ds-dd")[i].removeAttribute("style");
+    }
+}
+
     //点击所有元素时检查是否需要关闭菜单
 function checkCloseDropDown(e,isDown){
     //这个就不用解释了吧
@@ -415,17 +424,9 @@ function checkCloseDropDown(e,isDown){
             //如果false，那么直接走人，不需要再搞什么了
             //如果true，那么判断松开时的元素是否还是不在菜单内，如果从头到尾和菜单没有一点关系，那么就可以确定用户在菜单外部单击了，关闭菜单，同时重置flag
         else if(isToCloseDropDown){
-            if(!obj.isInClass("ds-dd")) closeDropDown();
+            if(!obj.isInClass("ds-dd")) closeDropDown;
             isToCloseDropDown = false;
         }
-    }
-}
-
-    //关闭菜单
-var closeDropDown = this.closeDropDown = _=>{
-    for(let i = 0; i < $(".ds-dd").length; i++){
-        $(".ds-dd")[i].css({"display":"","top":"","left":""});
-        if($(".ds-dd")[i].getAttribute("style") === "") $(".ds-dd")[i].removeAttribute("style");
     }
 }
 //end菜单
