@@ -187,7 +187,7 @@ function moveUp(){
     if(isMoving){
         isMoving = false;
         //zIndex(move); //由于某些玄学因素，这里不能zIndex，否则会使bug更多
-        delStyle($("html"));
+        delStyle($("html")[0]);
     }
 }
 
@@ -310,11 +310,13 @@ var fixpos = this.fixpos = _=>{
 //弹出框
     //遮罩创建
 function createMask(){
-    if(overlay) return;
-    let e = document.createElement("div");
-    e.id = "ds-overlay";
-    document.body.prepend(e);
-    overlay = $("#ds-overlay");
+    if(overlay == false){//note:important:这里不可以写!overlay，对于空数组它们的运行结果不一致，我也觉得很奇怪。可见我提的问题：https://www.zhihu.com/question/515825074
+        console.log("l");
+        let e = document.createElement("div");
+        e.id = "ds-overlay";
+        document.body.prepend(e);
+        overlay = $("#ds-overlay");
+    }
 }
 
     //事件注册
@@ -329,7 +331,7 @@ $("#ds-overlay").ontouchend = $("#ds-overlay").onmouseup = e=>{
 
     //显示，返回序号
 var showPopUp = this.showPopUp = d=>{
-    overlay.append(d);
+    overlay.append(d.cloneNode(true));
     return overlay.children.length - 1;
 }
 
