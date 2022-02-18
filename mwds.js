@@ -6,8 +6,10 @@ var MWDS = function(){
  */
 console.log("mwds.js - MoreWindows ©LJM12914\r\noink组件。 https://github.com/openink/mwds");
 //全局变量区
+    //内部luery指代
+var $ = luery,
     //遮罩
-var overlay = $("#ds-overlay"),
+overlay = $("#ds-overlay"),
     //弹出框删除flag
 isToClosePopUp = false,
     //窗口移动flag
