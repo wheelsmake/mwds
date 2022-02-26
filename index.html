@@ -23,32 +23,32 @@
                 <li>我是第二个？？？？</li>
             </ul>
         </div>
-        <div class="ds-win ds-tra ds-mov ds-ontop" id="first" style="top: 400px;">
+        <div class="ds-tra ds-mov ds-ontop" id="first" style="top: 400px;">
             <span>first - ON TOP!!!!!!!!!</span>
             <s>fsaj<span id="www">fiwaicfwaf</span>cwea</s><br />
             按下Alt+Shift可以无视所有元素一律拖动。<br />
             <span>加上span就可以了</span>
             <button onclick="mwds.showPopUp(this)">测试</button>
         </div>
-        <div class="ds-win ds-a ds-tra ds-mov" id="second" style="top: 200px;">
+        <div class="ds-a ds-tra ds-mov" id="second" style="top: 200px;">
             <span>second</span>
             <s>fsajfiwaicfwafcwea</s><br />
             <p>我是一个块级元素p。我的右边也是我的领地，你不能在我右边拖动！ </p>
             <s>我是个<span><span class="ds-tt ds-tt-r">专指代码的行内</span>行内</span>元素s，你可以在我右边拖动。</s><br />
             我是一个根text节点，所以我会被直接拖动，这很烦，不过也许适合用来做一些特殊的东西。
         </div>
-        <div class="ds-win" id="third" style="left: 400px; top: 100px">
+        <div id="third" style="left: 400px; top: 100px">
             <span>thirdwindow</span><br />
             <span><span class="ds-tt ds-tt-b-t">ds-mov!!</span><span>我不可以拖动。</span></span><br />
             <span>a</span><br />
             <i>fktest</i>
         </div>
-        <div class="ds-win ds-tra ds-cls ds-mov" id="fourth" style="left: 900px;">
+        <div class="ds-tra ds-cls ds-mov" id="fourth" style="left: 900px;">
             <span>我是第四个</span><br />
             <span>fdssefsdfesd</span>
             <p><span class="ds-tt ds-tt-l-t">双击啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊</span>一个p，我可以关闭！</p>
         </div>
-        <div class="ds-win ds-tra ds-cls ds-mov" id="fifth" style="left: 100px">
+        <div class="ds-tra ds-cls ds-mov" id="fifth" style="left: 100px">
             <span>我是第五个</span><br />
             <span>fdssefsdfesd</span><br />
             <span>fdssefsdfesd</span><br />
@@ -60,7 +60,7 @@
             <p>一个p，我可以关闭！</p>
             我被视作一个空闲区域，可以关闭
         </div>
-        <div class="ds-win ds-tra ds-cls ds-mov" id="sixth" style="left: 500px;top: 400px">
+        <div class="ds-tra ds-cls ds-mov" id="sixth" style="left: 500px;top: 400px">
             <span>我是第六个</span><br />
             <span>fdssefsdfesd</span>
             <p>一个p，我可以关闭！</p>
@@ -75,11 +75,15 @@
     <script src="../luery/luery.js"></script>
     <script src="../luery/dragmove.js"></script>
     <script src="mwds.js"></script>
-    <script>//测试区
-        //测试菜单注册
-    var dm = new DM;
-    var mwds = new MWDS;
-    mwds.registerDropDown($("#content"),$("#testddd"));
-    mwds.registerDropDown($("#third"),$("#testdd"));
+    <script>
+        var mwds = new MWDS;
+        mwds.win($("#first"));
+        mwds.win($("#second"));
+        mwds.win($("#third"));
+        mwds.win($("#fourth"));
+        mwds.win($("#fifth"));
+        mwds.win($("#sixth"));
+        mwds.registerDropDown($("#content"),$("#testddd"));
+        mwds.registerDropDown($("#third"),$("#testdd"));
     </script>
 </html>

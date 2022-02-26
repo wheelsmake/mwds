@@ -10,19 +10,19 @@ console.log("mwds.js - MoreWindows ©LJM12914\r\noink组件。 https://github.co
 var $ = luery,
     //遮罩
 overlay = $("#ds-overlay"),
-    //弹出框删除flag
+    //弹出框关闭flag
 isToClosePopUp = false,
     //窗口移动flag
 isMoving = false,
     //窗口移动跨方法变量
 deltaTop, deltaLeft, move,
+    //窗口关闭flag
+isToCloseCls = false,
     //菜单关闭flag
 isToCloseDropDown = false,
 pressedMenuItem,
     //窗口超限探测优化flag
-resizeTimer = null,
-    //DOM变化监测
-observer;
+resizeTimer = null;
 //end全局变量区
 
 //公共函数/方法区
@@ -58,7 +58,7 @@ window.addEventListener("resize",e=>{
 });
 
     //可关闭的窗口初始化
-clsAddToolTip();//给ds-cls添加提示框（必须放在toolTipIni()之前执行）
+//clsAddToolTip();//给ds-cls添加提示框（必须放在toolTipIni()之前执行）
 
     //遮罩层初始化
 createMask();//弹出框/菜单遮罩创建
@@ -68,12 +68,9 @@ toolTipIni();//给tooltip父节点添加标记
 
     //注册所有事件
 registerEvents();
-
-    //DOM变化监测
-observer = new MutationObserver(processMutation);
-observer.observe($("body")[0],{characterData:true,attributes:true,childList:true,subtree:true});
 //end初始化
 
+/*
 //fixme:事件注册与DOM变化监测
     //DOM变化监测
 function processMutation(l){
@@ -93,7 +90,7 @@ function processMutation(l){
         //}
     }
     //registerEvents();
-}
+}*/
 
     //事件注册
 function registerEvents(){
@@ -132,6 +129,10 @@ function registerEvents(){
     }catch(e){}
 }
 //end注册事件
+
+//窗口注册
+var win = this.win = obj=>{obj.addClass("ds-win");}
+//end窗口注册
 
 //移动
     //general按下处理
@@ -236,13 +237,11 @@ function zIndex(o){
 
 //可关闭的窗口
     //给ds-cls自动安排tooltip
-function clsAddToolTip(){
-    let c = document.createElement("div");
-    c.addClass("ds-tt ds-tt-t");
-    c.innerText = "在空闲区域双击可关闭窗口";
-    let a = $(".ds-cls");
-    for(let i = 0; i < a.length; i++) a[i].innerHTML = c.outerHTML + a[i].innerHTML;
-}
+/*function clsAddToolTip(){
+    for(let i = 0; i < a.length; i++){
+
+    }
+}*/
 
     //双击关闭ds-cls
 function closeCls(isTouch, e){
@@ -259,7 +258,36 @@ function closeCls(isTouch, e){
 //end可关闭的窗口
 
 //提示框
-    //给tooltip父节点添加标记，给tooltip打个原始class标记
+    //提示框注册
+var appendToolTip = this.appendToolTip = (t,h,d,s)=>{
+    var e = document.createElement("div").addClass("ds-tt");
+    e.innerHTML = h;
+    switch(d){
+        case "t":
+            if(s) e.addClass("ds-tt-t-t");
+            else e.addClass("ds-tt-t");
+            break;
+        case "b":
+            if(s) e.addClass("ds-tt-b-t");
+            else e.addClass("ds-tt-b");
+            break;
+        case "l":
+            if(s) e.addClass("ds-tt-l-t");
+            else e.addClass("ds-tt-l");
+            break;
+        case "r":
+            if(s) e.addClass("ds-tt-r-t");
+            else e.addClass("ds-tt-r");
+            break;
+        default:
+            throw new TypeError("invalid direction argument");
+    }
+    t.append
+    t.append(e);
+}
+    //end提示框注册
+
+ /*   //给tooltip父节点添加标记，给tooltip打个原始class标记
 function toolTipIni(){
     let a = $(".ds-tt");
     for(let i = 0; i < a.length; i++){
@@ -267,6 +295,8 @@ function toolTipIni(){
         a[i].setAttribute("data-tt-o",a[i].className.substring(a[i].className.indexOf("ds-tt-") + 6,a[i].className.length));
     }
 }
+注：不使用预声明了，这个没用了
+*/
 
     //对齐tooltip
 function alignToolTip(tp){
@@ -313,7 +343,6 @@ var fixpos = this.fixpos = _=>{
     //遮罩创建
 function createMask(){
     if(overlay == false){//note:important:这里不可以写!overlay，对于空数组它们的运行结果不一致，我也觉得很奇怪。可见我提的问题：https://www.zhihu.com/question/515825074
-        console.log("l");
         let e = document.createElement("div");
         e.id = "ds-overlay";
         document.body.prepend(e);
@@ -356,7 +385,7 @@ var hidePopUp = this.hidePopUp = d=>{//传入序号！！！
 var registerDropDown = this.registerDropDown = (er,ee,noPro)=>{
     let t, l;
     $.Events(er,"contextmenu",e=>{
-        //console.log(e.target,er);
+        console.log(e.target,er);
         if(noPro && checkDDProp(e.target)) return;
         e.preventDefault();
         ee.css("display","block");
