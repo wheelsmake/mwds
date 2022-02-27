@@ -56,7 +56,7 @@ mwds在创建实例时会自动进行一些初始化操作。下文均使用`mwd
 
 ## 一、窗口
 
-### 新建（TODO）
+### 新建
 
 ```javascript
 mwds.win($("#mywin"));
@@ -101,7 +101,7 @@ $("#mywin").addClass("ds-win");
 ### 新建（TODO）
 
 ```javascript
-mwds.appendToolTip($("#target-Element"), "tooltip html", "direction", <showTip>);
+mwds.toolTip($("#target-Element"), "tooltip html", "direction", <showTip>);
 ```
 
 `$("#target-Element")`：要放置提示框的元素。

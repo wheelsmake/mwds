@@ -47,13 +47,52 @@ function checkWinPos(o){//上和左比下和右更重要，所以放在最后
 //end公共函数/方法区
 
 //初始化
+    //杂项
+        //todo:防止有人在classlist里写ds-zin锁窗口
+//$("*").removeAttribute("ds-zin");
+        //防止窗口超限
+for(let i = 0; i < $(".ds-win").length; i++) checkWinPos($(".ds-win")[i]);
+window.addEventListener("resize",e=>{
+    if(resizeTimer) clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(c=>{for(let i = 0; i < $(".ds-win").length; i++) checkWinPos($(".ds-win")[i]);},250);
+});
+
+    //可关闭的窗口初始化
+//clsAddToolTip();//给ds-cls添加提示框（必须放在toolTipIni()之前执行）
+
     //遮罩层初始化
 createMask();//弹出框/菜单遮罩创建
+
+    //提示框初始化
+//toolTipIni();//给tooltip父节点添加标记
+
     //注册所有事件
 registerEvents();
 //end初始化
 
-//注册事件
+/*
+//fixme:事件注册与DOM变化监测
+    //DOM变化监测
+function processMutation(l){
+    for(let i = 0; i < l.length; i++){
+        //console.log(l[i]);
+        if(l[i].type == "childList" && !!l[i].addedNodes){
+            console.log("c");
+        }
+        //else if(l[i].type == "subtree"){//不知道是啥，丢弃
+            //console.log("s");
+        //}
+        else if(l[i].type == "attributes" && l[i].attributeName == "class"){
+            console.log("a");
+        }
+        //else if(l[i].type == "characterData"){//元素内部数据发生改变，丢弃
+            //console.log("d");
+        //}
+    }
+    //registerEvents();
+}*/
+
+    //事件注册
 function registerEvents(){
     //通用
     $.Events($("*"),"mousedown",e=>{
@@ -91,17 +130,12 @@ function registerEvents(){
 }
 //end注册事件
 
-//窗口
-    //窗口注册
-var win = this.win = obj=>{
-    obj.addClass("ds-win");
-    registerEvents();
-    if(obj.hasClass("ds-cls")) toolTip(obj,"双击空闲区域可关闭窗口","b",false);
-}
-    //end窗口注册
+//窗口注册
+var win = this.win = obj=>{obj.addClass("ds-win");}
+//end窗口注册
 
-    //移动
-        //general按下处理
+//移动
+    //general按下处理
 function checkWinPress(isTouch, e){
     let t = e.target;
     if(t.isInClass("ds-win")){
@@ -111,7 +145,7 @@ function checkWinPress(isTouch, e){
     }
 }
 
-        //ds-win按下处理
+    //ds-win按下处理
 function pressOnWin(isTouch, e){
     move = e.target;
     if(move.hasClass("ds-mov")){//防止事件冒泡
@@ -129,14 +163,14 @@ function pressOnWin(isTouch, e){
     }
 }
 
-        //移动窗口设置全局最大zindex
+    //移动窗口设置全局最大zindex
 function zinmax(){
     let m = 0;
     for(let i = 0; i < $(".ds-win").length; i++) m = Math.max(m,getZ($(".ds-win")[i]));
     setZ(move,false,m + 1);
 }
 
-        //移动中处理
+    //移动中处理
 function moveWindows(isTouch, e){
     if(isMoving){
         if(isTouch){
@@ -151,7 +185,7 @@ function moveWindows(isTouch, e){
     }
 }
 
-        //松开处理
+    //松开处理
 function moveUp(){
     if(isMoving){
         isMoving = false;
@@ -160,17 +194,17 @@ function moveUp(){
     }
 }
 
-        //递归删除没用style
+    //递归删除没用style
 function delStyle(d){
     let s = d.getAttribute("style");
     if(s == "cursor: grabbing; user-select: none; -webkit-user-drag: none;") d.removeAttribute("style");
     else d.css({"cursor":"","user-select":"","-webkit-user-drag":"","-webkit-user-select":""});
     for(let i = 0;i < d.children.length; i++) delStyle(d.children[i]);
 }
-    //end移动
+//end移动
 
-    //窗口提升
-        //判断a在b上面还是下面+检测
+//窗口提升
+    //判断a在b上面还是下面+检测
 function tOrb(a, b){
     let t = $.tt(a,"t");
     let o = $.tt(a,"b");
@@ -179,8 +213,7 @@ function tOrb(a, b){
     let t1 = $.tt(b,"t");
     let o1 = $.tt(b,"b");
     let l1 = $.tt(b,"l");
-    let r1 = $.tt(b,"r");
-    //fixed:不加等号会导致完全重叠在一起的窗口无法分离
+    let r1 = $.tt(b,"r");//fixed:不加等号会导致完全重叠在一起的窗口无法分离，已修复
     if(((t>=t1&&t<=o1)||(o>=t1&&o<=o1)||(t1>=t&&t1<=o)||(o1>=t&&o1<=o))&&((l>=l1&&l<=r1)||(r>=l1&&r<=r1)||(l1>=l&&l1<=r)||(r1>=l&&r1<=r))){//判断是否覆盖
         if(getZ(a) > getZ(b)) return "a";//a在上
         else if(getZ(a) < getZ(b)) return "b";//a在下
@@ -188,7 +221,7 @@ function tOrb(a, b){
     }else return "e";//根本就没覆盖
 }
 
-        //dark名鼎鼎的zIndex方法 fixme:搞完了，但还是有点问题，4-3L时由于没有记录相对位置仍然会出现问题，可能的解决方案：先把非e记录进数组再按zindex执行递归
+    //dark名鼎鼎的zIndex方法 fixme:搞完了，但还是有点问题，4-3L时由于没有记录相对位置仍然会出现问题，可能的解决方案：先把非e记录进数组再按zindex执行递归
 function zIndex(o){
     setZ(o,false,50);
     for(let i = 0; i < $(".ds-win").length; i++){
@@ -200,10 +233,16 @@ function zIndex(o){
     }
     return getZ(o);
 }
-    //end窗口提升
-//end窗口
+//end窗口提升
 
 //可关闭的窗口
+    //给ds-cls自动安排tooltip
+/*function clsAddToolTip(){
+    for(let i = 0; i < a.length; i++){
+
+    }
+}*/
+
     //双击关闭ds-cls
 function closeCls(isTouch, e){
     let t = e.target;
@@ -220,7 +259,7 @@ function closeCls(isTouch, e){
 
 //提示框
     //提示框注册
-var toolTip = this.toolTip = (t,h,d,s)=>{
+var appendToolTip = this.appendToolTip = (t,h,d,s)=>{
     var e = document.createElement("div").addClass("ds-tt");
     e.innerHTML = h;
     switch(d){
@@ -243,10 +282,21 @@ var toolTip = this.toolTip = (t,h,d,s)=>{
         default:
             throw new TypeError("invalid direction argument");
     }
-    t.addClass("ds-tp");
+    t.append
     t.append(e);
-    registerEvents();
 }
+    //end提示框注册
+
+ /*   //给tooltip父节点添加标记，给tooltip打个原始class标记
+function toolTipIni(){
+    let a = $(".ds-tt");
+    for(let i = 0; i < a.length; i++){
+        a[i].parent().addClass("ds-tp");
+        a[i].setAttribute("data-tt-o",a[i].className.substring(a[i].className.indexOf("ds-tt-") + 6,a[i].className.length));
+    }
+}
+注：不使用预声明了，这个没用了
+*/
 
     //对齐tooltip
 function alignToolTip(tp){
@@ -254,17 +304,9 @@ function alignToolTip(tp){
     let t = tp.querySelector(".ds-tt");//不管一个元素内含多个tooltip，note:由于不是document域，无法使用luery获取
     //toFixed()是为了防止渲染精度导致的tooltip随机抖动，偏差很小不要紧
     //对于浮动在上下的tooltip需要左右对齐（1/2宽度）
-    if(t.hasClass("ds-tt-t") || t.hasClass("ds-tt-b") || t.hasClass("ds-tt-t-t") || t.hasClass("ds-tt-b-t")){
-        //fixed:如果元素宽高为auto，则relative->absolute的坐标基点不同，使用不同的对齐方案
-        if(tp.css("width") == "auto") t.css("margin-left",(-($.tt(tp,"pw") + $.tt(t,"w")) / 2).toFixed(2) + "px"); 
-        else t.css("margin-left",(($.tt(tp,"pw") - $.tt(t,"w")) / 2).toFixed(2) + "px"); 
-    }
+    if(t.hasClass("ds-tt-t") || t.hasClass("ds-tt-b") || t.hasClass("ds-tt-t-t") || t.hasClass("ds-tt-b-t")) t.css("margin-left",(($.tt(tp,"pw") - $.tt(t,"w")) / 2).toFixed(2) + "px");
     //对于浮动在左右的tooltip需要上下对齐（1/2高度）
-    else if(t.hasClass("ds-tt-l") || t.hasClass("ds-tt-r") || t.hasClass("ds-tt-l-t") || t.hasClass("ds-tt-r-t")){
-        //fixed:如果元素宽高为auto，则relative->absolute的坐标基点不同，使用不同的对齐方案
-        if(tp.css("height") == "auto") t.css("margin-top",(-($.tt(tp,"ph") + $.tt(t,"h")) / 2).toFixed(2) + "px");
-        else t.css("margin-top",(($.tt(tp,"ph") - $.tt(t,"h")) / 2).toFixed(2) + "px");
-    }
+    else if(t.hasClass("ds-tt-l") || t.hasClass("ds-tt-r") || t.hasClass("ds-tt-l-t") || t.hasClass("ds-tt-r-t")) t.css("margin-top",(($.tt(tp,"ph") - $.tt(t,"h")) / 2).toFixed(2) + "px");
     //智能显示
     if($.tt(t,"fr") > document.body.clientWidth) checkToolTip("r","l",t);
     if($.tt(t,"fb") > innerHeight) checkToolTip("b","t",t);
@@ -272,7 +314,7 @@ function alignToolTip(tp){
     if($.tt(t,"ft") < 0) checkToolTip("t","b",t);
 }
 
-    //todo:important:warning:fixme:note:这里必须重构了，很混乱
+//todo:important:warning:fixme:note:这里必须重构了，很混乱
     //辅助智能显示todo:指定原始的样式，一旦特殊情况结束则返回原始样式
 function checkToolTip(s,g,o){
     if(o.hasClass("ds-tt-" + s)){
@@ -289,6 +331,13 @@ function checkToolTip(s,g,o){
     alignToolTip(o);
 }
 //end提示框
+
+//固定栏
+    //
+var fixpos = this.fixpos = _=>{
+    //note:这里先不做，先去做更有意义的事
+}
+//end固定栏
 
 //弹出框
     //遮罩创建
@@ -332,7 +381,7 @@ var hidePopUp = this.hidePopUp = d=>{//传入序号！！！
 //end弹出框
 
 //菜单
-    //绑定菜单
+    //菜单绑定
 var registerDropDown = this.registerDropDown = (er,ee,noPro)=>{
     let t, l;
     $.Events(er,"contextmenu",e=>{
