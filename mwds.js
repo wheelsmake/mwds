@@ -342,20 +342,20 @@ var registerDropDown = this.registerDropDown = (er,ee,noPro)=>{
         ee.css("display","block");
         for(let i = 0; i < 12914; i++){//反正绝对不可能超过10次就出去了，不管这里是多少了
             if(ee.hasClass("ds-dd-bl")){
-                t = e.clientY + 10;
-                l = e.clientX - $.tt(ee,"w") - 10;
+                t = e.clientY + 8;
+                l = e.clientX - $.tt(ee,"w") - 8;
             }
             else if(ee.hasClass("ds-dd-tr")){
-                t = e.clientY - $.tt(ee,"h") - 10;
-                l = e.clientX + 10;
+                t = e.clientY - $.tt(ee,"h") - 8;
+                l = e.clientX + 8;
             }
             else if(ee.hasClass("ds-dd-tl")){
-                t = e.clientY - $.tt(ee,"h") - 10;
-                l = e.clientX - $.tt(ee,"w") - 10;
+                t = e.clientY - $.tt(ee,"h") - 8;
+                l = e.clientX - $.tt(ee,"w") - 8;
             }
             else{//ds-dd-br，默认
-                t = e.clientY + 10;
-                l = e.clientX + 10;
+                t = e.clientY + 8;
+                l = e.clientX + 8;
             }
             if(checkDropDownPos()){
                 ee.css("top",t + "px");//JSON对象不允许插值，只能分开
