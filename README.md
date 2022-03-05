@@ -98,7 +98,7 @@ $("#mywin").addClass("ds-win");
 
 提示框（Tooltip）是hover一些元素时弹出的小框，用于提示该元素的作用。提示框类是`.ds-tt`。提示框的`z-index`为其产生区域的`z-index`，所以可能看不到提示框。
 
-### 新建（TODO）
+### 新建
 
 ```javascript
 mwds.toolTip($("#target-Element"), "tooltip html", "direction", <showTip>);

@@ -225,20 +225,20 @@ var toolTip = this.toolTip = (t,h,d,s)=>{
     e.innerHTML = h;
     switch(d){
         case "t":
-            if(s) e.addClass("ds-tt-t-t");
-            else e.addClass("ds-tt-t");
+            if(s) e.addClass("ds-tt-t-t").setAttribute("data-tt-o","ds-tt-t-t");
+            else e.addClass("ds-tt-t").setAttribute("data-tt-o","ds-tt-t");
             break;
         case "b":
-            if(s) e.addClass("ds-tt-b-t");
-            else e.addClass("ds-tt-b");
+            if(s) e.addClass("ds-tt-b-t").setAttribute("data-tt-o","ds-tt-b-t");
+            else e.addClass("ds-tt-b").setAttribute("data-tt-o","ds-tt-b");
             break;
         case "l":
-            if(s) e.addClass("ds-tt-l-t");
-            else e.addClass("ds-tt-l");
+            if(s) e.addClass("ds-tt-l-t").setAttribute("data-tt-o","ds-tt-l-t");
+            else e.addClass("ds-tt-l").setAttribute("data-tt-o","ds-tt-l");
             break;
         case "r":
-            if(s) e.addClass("ds-tt-r-t");
-            else e.addClass("ds-tt-r");
+            if(s) e.addClass("ds-tt-r-t").setAttribute("data-tt-o","ds-tt-r-t");
+            else e.addClass("ds-tt-r").setAttribute("data-tt-o","ds-tt-r");
             break;
         default:
             throw new TypeError("invalid direction argument");
@@ -250,33 +250,80 @@ var toolTip = this.toolTip = (t,h,d,s)=>{
 
     //对齐tooltip
 function alignToolTip(tp){
+    //数据获取
     if(!tp.hasClass("ds-tp")) return;
     let t = tp.querySelector(".ds-tt");//不管一个元素内含多个tooltip，note:由于不是document域，无法使用luery获取
-    //toFixed()是为了防止渲染精度导致的tooltip随机抖动，偏差很小不要紧
-    //对于浮动在上下的tooltip需要左右对齐（1/2宽度）
-    if(t.hasClass("ds-tt-t") || t.hasClass("ds-tt-b") || t.hasClass("ds-tt-t-t") || t.hasClass("ds-tt-b-t")){
-        //fixed:如果元素宽高为auto，则relative->absolute的坐标基点不同，使用不同的对齐方案
-        if(tp.css("width") == "auto") t.css("margin-left",(-($.tt(tp,"pw") + $.tt(t,"w")) / 2).toFixed(2) + "px"); 
-        else t.css("margin-left",(($.tt(tp,"pw") - $.tt(t,"w")) / 2).toFixed(2) + "px"); 
+
+    //还原原来的样式
+    t.removeClass("ds-tt-t")
+    .removeClass("ds-tt-t-t")
+    .removeClass("ds-tt-b")
+    .removeClass("ds-tt-b-t")
+    .removeClass("ds-tt-l")
+    .removeClass("ds-tt-l-t")
+    .removeClass("ds-tt-r")
+    .removeClass("ds-tt-r-t")
+    .addClass(t.getAttribute("data-tt-o"));
+
+    //对齐主算法
+        //尝试次数不超过5次
+    for(let i = 0; i < 5; i++){
+    //对齐
+        //toFixed()是为了防止渲染精度导致的tooltip随机抖动，偏差很小不要紧
+        //对于浮动在上下的tooltip需要左右对齐（1/2宽度）
+        if(t.hasClass("ds-tt-t") || t.hasClass("ds-tt-b") || t.hasClass("ds-tt-t-t") || t.hasClass("ds-tt-b-t")){
+            //fixed:其实方案是相同的 fixed:如果元素宽高为auto，则relative->absolute的坐标基点不同，使用不同的对齐方案
+            //console.log(tp.css("width"));
+            t.css("margin-left",(($.tt(tp,"pw") - $.tt(t,"w")) / 2).toFixed(2) + "px");
+        }
+        //对于浮动在左右的tooltip需要上下对齐（1/2高度）
+        else if(t.hasClass("ds-tt-l") || t.hasClass("ds-tt-r") || t.hasClass("ds-tt-l-t") || t.hasClass("ds-tt-r-t")){
+            //fixed:其实方案是相同的 fixed:如果元素宽高为auto，则relative->absolute的坐标基点不同，使用不同的对齐方案
+            //console.log(tp.css("height"));
+            t.css("margin-top",(-($.tt(tp,"ph") + $.tt(t,"h")) / 2).toFixed(2) + "px");
+        }
+
+    //测试是否超出界限，若超出则重新进行
+        if($.tt(t,"fr") > document.body.clientWidth){
+            
+            //checkToolTip("r",t);
+        }
+        if($.tt(t,"fb") > innerHeight) checkToolTip("b",t);
+        if($.tt(t,"fl") < 0) checkToolTip("l",t);
+        if($.tt(t,"ft") < 0) checkToolTip("t",t);
     }
-    //对于浮动在左右的tooltip需要上下对齐（1/2高度）
-    else if(t.hasClass("ds-tt-l") || t.hasClass("ds-tt-r") || t.hasClass("ds-tt-l-t") || t.hasClass("ds-tt-r-t")){
-        //fixed:如果元素宽高为auto，则relative->absolute的坐标基点不同，使用不同的对齐方案
-        if(tp.css("height") == "auto") t.css("margin-top",(-($.tt(tp,"ph") + $.tt(t,"h")) / 2).toFixed(2) + "px");
-        else t.css("margin-top",(($.tt(tp,"ph") - $.tt(t,"h")) / 2).toFixed(2) + "px");
-    }
-    //智能显示
-    if($.tt(t,"fr") > document.body.clientWidth) checkToolTip("r","l",t);
-    if($.tt(t,"fb") > innerHeight) checkToolTip("b","t",t);
-    if($.tt(t,"fl") < 0) checkToolTip("l","r",t);
-    if($.tt(t,"ft") < 0) checkToolTip("t","b",t);
 }
 
-    //todo:important:warning:fixme:note:这里必须重构了，很混乱
+    //fixme:这里必须重构了，很混乱
     //辅助智能显示todo:指定原始的样式，一旦特殊情况结束则返回原始样式
-function checkToolTip(s,g,o){
+/*function checkToolTip(s,o){
+    var a = o.getAttribute("data-tt-o");
+
+    if(s == "t" || s == "b"){
+        switch(a){
+            case "ds-tt-t":
+                break;
+            case "ds-tt-t-t":
+                break;
+            case "ds-tt-b":
+                break;
+            case "ds-tt-b-t":
+                break;
+        }
+    }
+    else if(s == "l" || s == "r"){
+        switch(a){
+            case "ds-tt-l":
+                break;
+            case "ds-tt-l-t":
+                break;
+            case "ds-tt-r":
+                break;
+            case "ds-tt-r-t":
+                break;
+        }
+    }
     if(o.hasClass("ds-tt-" + s)){
-        o.setAttribute("data-tt-o",s);
         o.removeClass("ds-tt-" + s);
         o.addClass("ds-tt-" + g);
     }
@@ -286,14 +333,14 @@ function checkToolTip(s,g,o){
         o.addClass("ds-tt-" + g + "-t");
     }
     else console.log("???");
-    alignToolTip(o);
-}
+    alignToolTip(o.getParentByClass("ds-tp"));
+}*/
 //end提示框
 
 //弹出框
     //遮罩创建
 function createMask(){
-    if(overlay == false){//note:important:这里不可以写!overlay，对于空数组它们的运行结果不一致，我也觉得很奇怪。可见我提的问题：https://www.zhihu.com/question/515825074
+    if(overlay == false){//important:这里不可以写!overlay，对于空数组它们的运行结果不一致，我也觉得很奇怪。可见我提的问题：https://www.zhihu.com/question/515825074
         let e = document.createElement("div");
         e.id = "ds-overlay";
         document.body.prepend(e);
