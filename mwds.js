@@ -31,8 +31,8 @@ function getZ(o){return parseInt(o.style.zIndex);}
 
     //增加/修改z-index
 function setZ(o,isP,p){//p可以是负数！
-    if(isP) o.style.zIndex = getZ(o) + p;
-    else o.style.zIndex = p;
+    if(isP) o.css("z-index",getZ(o) + p);
+    else o.css("z-index",p);
     //return getZ(obj);
 }
 
@@ -54,40 +54,50 @@ registerEvents();
 //end初始化
 
 //注册事件
-function registerEvents(){
-    //通用
-    $.Events($("*"),"mousedown",e=>{
-        checkCloseDropDown(e,true);
-        checkWinPress(false,e);
-    });
-    $.Events($("*"),"mousemove",e=>{moveWindows(false,e);});
-    $.Events($("*"),"mouseup",e=>{
-        checkCloseDropDown(e,false);
-        moveUp();
-    });
-    $.Events($("*"),"touchstart",e=>{checkWinPress(true,e);});
-    $.Events($("*"),"touchmove",e=>{moveWindows(true,e)});
-    $.Events($("*"),"touchend",e=>{moveUp();});
-    //$Events($("*"),"click",e=>{});
-    //移动
-    try{$.Events($(".ds-win.ds-mov"),"mousedown",e=>{pressOnWin(false,e);});}catch(e){}//这里不需要抛异常，没有窗口要移动很正常，反而更轻松了
-    try{$.Events($(".ds-win.ds-mov"),"touchstart",e=>{pressOnWin(true,e);});}catch(e){}
-    //可关闭窗口
-    try{$.Events($(".ds-win.ds-cls"),"dblclick",e=>{closeCls(false,e);});}catch(e){}
-    //fixme:这里由于子节点的touchstart传不上来，无法在触摸屏点击窗口内容时出现提示。
-    try{$.Events($(".ds-win.ds-cls"),"touchstart",e=>{closeCls(true,e);});}catch(e){}
-    //提示框
-    try{$.Events($(".ds-tp"),"mouseover",e=>{alignToolTip(e.target);});}catch(e){}
-    try{$.Events($(".ds-tp"),"touchstart",e=>{alignToolTip(e.target);});}catch(e){}
-    //菜单
-    //点击菜单任意子元素后关闭所有菜单，ds-nocls除外
-    try{$.Events($(".ds-dd"),"mousedown",e=>{pressedMenuItem = e.target;});}catch(e){}
-    try{
-        $.Events($(".ds-dd"),"mouseup",e=>{
-            if(pressedMenuItem === e.target && !e.target.hasClass("ds-dd") && !e.target.getParentByClass("ds-dd").hasClass("ds-nocls") && !e.button) closeDropDown();
-            pressedMenuItem = undefined;
+function registerEvents(eToRegister){
+    if(eToRegister !== undefined) eval(eToRegister + "();");
+    else any();mov();cls();tt();dd();
+    //todo:避免多次注册事件
+    function any(){//通用
+        $.Events($("*"),"mousedown",e=>{
+            checkCloseDropDown(e,true);
+            checkWinPress(false,e);
         });
-    }catch(e){}
+        $.Events($("*"),"mousemove",e=>{moveWindows(false,e);});
+        $.Events($("*"),"mouseup",e=>{
+            checkCloseDropDown(e,false);
+            moveUp();
+        });
+        $.Events($("*"),"touchstart",e=>{checkWinPress(true,e);});
+        $.Events($("*"),"touchmove",e=>{moveWindows(true,e)});
+        $.Events($("*"),"touchend",e=>{moveUp();});
+        //$Events($("*"),"click",e=>{});
+    }
+    function mov(){//移动
+        //这里不需要抛异常，没有窗口要移动很正常，反而更轻松了
+        try{$.Events($(".ds-win.ds-mov"),"mousedown",e=>{pressOnWin(false,e);});}catch(e){}
+        try{$.Events($(".ds-win.ds-mov"),"touchstart",e=>{pressOnWin(true,e);});}catch(e){}
+    }
+    function cls(){//可关闭窗口
+        try{$.Events($(".ds-win.ds-cls"),"dblclick",e=>{closeCls(false,e);});}catch(e){}
+        //fixme:这里由于子节点的touchstart传不上来，无法在触摸屏点击窗口内容时出现提示。
+        try{$.Events($(".ds-win.ds-cls"),"touchstart",e=>{closeCls(true,e);});}catch(e){}
+    }
+    function tt(){//提示框
+        try{$.Events($(".ds-tp"),"mouseover",e=>{alignToolTip(e.target);});}catch(e){}
+        try{$.Events($(".ds-tp"),"touchstart",e=>{alignToolTip(e.target);});}catch(e){}
+    }
+    function dd(){//菜单
+        //点击菜单任意子元素后关闭所有菜单，ds-nocls除外
+        try{$.Events($(".ds-dd"),"mousedown",e=>{pressedMenuItem = e.target;});}catch(e){}
+        try{
+            $.Events($(".ds-dd"),"mouseup",e=>{
+                if(pressedMenuItem === e.target && !e.target.hasClass("ds-dd") && !e.target.getParentByClass("ds-dd").hasClass("ds-nocls") && !e.button) closeDropDown();
+                pressedMenuItem = undefined;
+            });
+        }
+        catch(e){}
+    }
 }
 //end注册事件
 
@@ -95,7 +105,8 @@ function registerEvents(){
     //窗口注册
 var win = this.win = obj=>{
     obj.addClass("ds-win");
-    registerEvents();
+    registerEvents("mov");
+    registerEvents("cls");
     if(obj.hasClass("ds-cls")) toolTip(obj,"双击空闲区域可关闭窗口","b",false);
 }
     //end窗口注册
@@ -209,11 +220,18 @@ function closeCls(isTouch, e){
     let t = e.target;
     if(!t.hasClass("ds-cls")) return;
     if(isTouch){
-        //setTimeout()//todo:触摸屏端检测双击
+        if(isToCloseCls){
+            c();
+            isToCloseCls = false;
+            return;
+        }
+        setTimeout(_=>{isToCloseCls = true;console.log("true");},0);
+        setTimeout(_=>{isToCloseCls = false;console.log("false");},450);
     }
-    else{
+    else c();
+    function c(){
         setZ(t,false,50,"cls");
-        t.css("display","none");
+        t.hide();
     }
 }
 //end可关闭的窗口
@@ -225,50 +243,39 @@ var toolTip = this.toolTip = (t,h,d,s)=>{
     e.innerHTML = h;
     switch(d){
         case "t":
-            if(s) e.addClass("ds-tt-t-t").setAttribute("data-tt-o","ds-tt-t-t");
-            else e.addClass("ds-tt-t").setAttribute("data-tt-o","ds-tt-t");
+            if(s) g("t-t");
+            else g("t");
             break;
         case "b":
-            if(s) e.addClass("ds-tt-b-t").setAttribute("data-tt-o","ds-tt-b-t");
-            else e.addClass("ds-tt-b").setAttribute("data-tt-o","ds-tt-b");
+            if(s) g("b-t");
+            else g("b");
             break;
         case "l":
-            if(s) e.addClass("ds-tt-l-t").setAttribute("data-tt-o","ds-tt-l-t");
-            else e.addClass("ds-tt-l").setAttribute("data-tt-o","ds-tt-l");
+            if(s) g("l-t");
+            else g("l");
             break;
         case "r":
-            if(s) e.addClass("ds-tt-r-t").setAttribute("data-tt-o","ds-tt-r-t");
-            else e.addClass("ds-tt-r").setAttribute("data-tt-o","ds-tt-r");
+            if(s) g("r-t");
+            else g("r");
             break;
         default:
             throw new TypeError("invalid direction argument");
     }
     t.addClass("ds-tp");
     t.append(e);
-    registerEvents();
+    registerEvents("tt");
+    function g(d){e.addClass("ds-tt-" + d).setAttribute("data-tt-o","ds-tt-" + d);}
 }
 
     //对齐tooltip
-function alignToolTip(tp){
+function alignToolTip(tp,isFixed){
     //数据获取
     if(!tp.hasClass("ds-tp")) return;
     let t = tp.querySelector(".ds-tt");//不管一个元素内含多个tooltip，note:由于不是document域，无法使用luery获取
-
     //还原原来的样式
-    t.removeClass("ds-tt-t")
-    .removeClass("ds-tt-t-t")
-    .removeClass("ds-tt-b")
-    .removeClass("ds-tt-b-t")
-    .removeClass("ds-tt-l")
-    .removeClass("ds-tt-l-t")
-    .removeClass("ds-tt-r")
-    .removeClass("ds-tt-r-t")
-    .addClass(t.getAttribute("data-tt-o"));
-
-    //对齐主算法
-        //尝试次数不超过5次
+    if(isFixed !== true) rAC().addClass(t.getAttribute("data-tt-o"));
+    //尝试次数不超过5次
     for(let i = 0; i < 5; i++){
-    //对齐
         //toFixed()是为了防止渲染精度导致的tooltip随机抖动，偏差很小不要紧
         //对于浮动在上下的tooltip需要左右对齐（1/2宽度）
         if(t.hasClass("ds-tt-t") || t.hasClass("ds-tt-b") || t.hasClass("ds-tt-t-t") || t.hasClass("ds-tt-b-t")){
@@ -282,59 +289,40 @@ function alignToolTip(tp){
             //console.log(tp.css("height"));
             t.css("margin-top",(-($.tt(tp,"ph") + $.tt(t,"h")) / 2).toFixed(2) + "px");
         }
-
-    //测试是否超出界限，若超出则重新进行
+        //测试是否超出界限，若超出则重新进行
         if($.tt(t,"fr") > document.body.clientWidth){
-            
-            //checkToolTip("r",t);
+            if(!i) fixToolTip("l");
+            else if(i == 1) fixToolTip("t");
+            else if(i == 2) fixToolTip("b");
         }
-        if($.tt(t,"fb") > innerHeight) checkToolTip("b",t);
-        if($.tt(t,"fl") < 0) checkToolTip("l",t);
-        if($.tt(t,"ft") < 0) checkToolTip("t",t);
+        if($.tt(t,"fb") > window.innerHeight){
+            if(!i) fixToolTip("t");
+            else if(i == 1) fixToolTip("l");
+            else if(i == 2) fixToolTip("r");
+        }
+        if($.tt(t,"fl") < 0){
+            if(!i) fixToolTip("r");
+            else if(i == 1) fixToolTip("t");
+            else if(i == 2) fixToolTip("b");
+        }
+        if($.tt(t,"ft") < 0){
+            if(!i) fixToolTip("b");
+            else if(i == 1) fixToolTip("l");
+            else if(i == 2) fixToolTip("r");
+        }
+        break;
     }
+    function fixToolTip(a){
+        //fixme:.ds-cls提示框失灵
+        //console.log(tp,t);
+        rAC();
+        if(hasTriangle()) t.addClass("ds-tt-" + a + "-t");
+        else t.addClass("ds-tt-" + a);
+        alignToolTip(t.getParentByClass("ds-tp"),true);
+    }
+    function hasTriangle(){let o = t.getAttribute("data-tt-o");return o == "ds-tt-t-t" || o == "ds-tt-b-t" || o == "ds-tt-l-t" || o == "ds-tt-r-t";}
+    function rAC(){return t.removeClass("ds-tt-t").removeClass("ds-tt-t-t").removeClass("ds-tt-b").removeClass("ds-tt-b-t").removeClass("ds-tt-l").removeClass("ds-tt-l-t").removeClass("ds-tt-r").removeClass("ds-tt-r-t");}
 }
-
-    //fixme:这里必须重构了，很混乱
-    //辅助智能显示todo:指定原始的样式，一旦特殊情况结束则返回原始样式
-/*function checkToolTip(s,o){
-    var a = o.getAttribute("data-tt-o");
-
-    if(s == "t" || s == "b"){
-        switch(a){
-            case "ds-tt-t":
-                break;
-            case "ds-tt-t-t":
-                break;
-            case "ds-tt-b":
-                break;
-            case "ds-tt-b-t":
-                break;
-        }
-    }
-    else if(s == "l" || s == "r"){
-        switch(a){
-            case "ds-tt-l":
-                break;
-            case "ds-tt-l-t":
-                break;
-            case "ds-tt-r":
-                break;
-            case "ds-tt-r-t":
-                break;
-        }
-    }
-    if(o.hasClass("ds-tt-" + s)){
-        o.removeClass("ds-tt-" + s);
-        o.addClass("ds-tt-" + g);
-    }
-    else if(o.hasClass("ds-tt-" + s + "-t")){
-        o.setAttribute("data-tt-o",s + "-t");
-        o.removeClass("ds-tt-" + s + "-t");
-        o.addClass("ds-tt-" + g + "-t");
-    }
-    else console.log("???");
-    alignToolTip(o.getParentByClass("ds-tp"));
-}*/
 //end提示框
 
 //弹出框
@@ -380,10 +368,10 @@ var hidePopUp = this.hidePopUp = d=>{//传入序号！！！
 
 //菜单
     //绑定菜单
-var registerDropDown = this.registerDropDown = (er,ee,noPro)=>{
+var dropDown = this.dropDown = (er,ee,noPro)=>{
     let t, l;
     $.Events(er,"contextmenu",e=>{
-        console.log(e.target,er);
+        //console.log(e.target,er);
         if(noPro && checkDDProp(e.target)) return;
         e.preventDefault();
         ee.css("display","block");
@@ -404,9 +392,11 @@ var registerDropDown = this.registerDropDown = (er,ee,noPro)=>{
                 t = e.clientY + 8;
                 l = e.clientX + 8;
             }
-            if(checkDropDownPos()){
-                ee.css("top",t + "px");//JSON对象不允许插值，只能分开
-                ee.css("left",l + "px");
+            if(checkDropDownPos()){//JSON对象不允许插值，只能分开
+                ee.css({
+                    top:t + "px",
+                    left:l + "px"
+                });
                 break;
             }
         }
@@ -418,7 +408,7 @@ var registerDropDown = this.registerDropDown = (er,ee,noPro)=>{
         return true;
     }
 
-        //检查是否冒泡事件
+        //检查是否冒泡事件fixme:
     function checkDDProp(obj){
         if(er.toString().indexOf("Collection") != -1){
             //console.log("a");
@@ -455,7 +445,7 @@ function checkCloseDropDown(e,isDown){
             //如果false，那么直接走人，不需要再搞什么了
             //如果true，那么判断松开时的元素是否还是不在菜单内，如果从头到尾和菜单没有一点关系，那么就可以确定用户在菜单外部单击了，关闭菜单，同时重置flag
         else if(isToCloseDropDown){
-            if(!obj.isInClass("ds-dd")) closeDropDown;
+            if(!obj.isInClass("ds-dd")) closeDropDown();
             isToCloseDropDown = false;
         }
     }
