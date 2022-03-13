@@ -22,18 +22,21 @@ isToCloseCls = false,
 isToCloseDropDown = false,
 pressedMenuItem,
     //窗口超限探测优化flag
-resizeTimer = null;
+resizeTimer = null,
+    //窗口初次移动zIndex flag
+isToZIndex = false,
+    //窗口z-index总体下降计数
+zIndexFallCount = 0;
 //end全局变量区
 
 //公共函数/方法区
     //快速获取z-index
-function getZ(o){return parseInt(o.style.zIndex);}
+function getZ(o){return parseInt(o.style.zIndex) || 50;}
 
-    //增加/修改z-index
-function setZ(o,isP,p){//p可以是负数！
-    if(isP) o.css("z-index",getZ(o) + p);
-    else o.css("z-index",p);
-    //return getZ(obj);
+    //修改z-index
+function setZ(o,p){
+    o.css("z-index",p);
+    return getZ(o);
 }
 
     //窗口越界检测
@@ -57,7 +60,7 @@ registerEvents();
 function registerEvents(eToRegister){
     if(eToRegister !== undefined) eval(eToRegister + "();");
     else any();mov();cls();tt();dd();
-    //todo:避免多次注册事件
+    //todo:important:避免多次注册事件
     function any(){//通用
         $.Events($("*"),"mousedown",e=>{
             checkCloseDropDown(e,true);
@@ -108,6 +111,7 @@ var win = this.win = obj=>{
     registerEvents("mov");
     registerEvents("cls");
     if(obj.hasClass("ds-cls")) toolTip(obj,"双击空闲区域可关闭窗口","b",false);
+    zIndex(obj);
 }
     //end窗口注册
 
@@ -126,7 +130,9 @@ function checkWinPress(isTouch, e){
 function pressOnWin(isTouch, e){
     move = e.target;
     if(move.hasClass("ds-mov")){//防止事件冒泡
-        zinmax();
+        $("*").css({"cursor":"grabbing","user-select":"none","-webkit-user-drag":"none","-webkit-user-select":"none"});
+        isToZIndex = true;
+        //zinmax(); //note:暂时关闭
         isMoving = true;
         if(isTouch){
             deltaTop = e.touches[0].pageY - $.tt(move,"t");
@@ -136,20 +142,23 @@ function pressOnWin(isTouch, e){
             deltaTop = e.pageY - $.tt(move,"t");
             deltaLeft = e.pageX - $.tt(move,"l");
         }
-        $("*").css({"cursor":"grabbing","user-select":"none","-webkit-user-drag":"none","-webkit-user-select":"none"});
     }
 }
 
         //移动窗口设置全局最大zindex
-function zinmax(){
-    let m = 0;
-    for(let i = 0; i < $(".ds-win").length; i++) m = Math.max(m,getZ($(".ds-win")[i]));
-    setZ(move,false,m + 1);
+function zinmax(o){
+    var m = 0, w = $(".ds-win");
+    for(let i = 0; i < w.length; i++) m = Math.max(m, getZ(w[i]));
+    setZ(o,m + 1);
 }
 
         //移动中处理
 function moveWindows(isTouch, e){
     if(isMoving){
+        if(isToZIndex){
+            zinmax(move);
+            isToZIndex = false;
+        }
         if(isTouch){
             move.css("top",e.touches[0].pageY - deltaTop + "px");
             move.css("left",e.touches[0].pageX - deltaLeft + "px");
@@ -166,15 +175,15 @@ function moveWindows(isTouch, e){
 function moveUp(){
     if(isMoving){
         isMoving = false;
-        //zIndex(move); //由于某些玄学因素，这里不能zIndex，否则会使bug更多
+        zIndex(move, true);
         delStyle($("html")[0]);
     }
 }
 
         //递归删除没用style
 function delStyle(d){
-    let s = d.getAttribute("style");
-    if(s == "cursor: grabbing; user-select: none; -webkit-user-drag: none;") d.removeAttribute("style");
+    let s = d.attr("style");
+    if(s == "cursor: grabbing; user-select: none; -webkit-user-drag: none;") d.attr("style",null);
     else d.css({"cursor":"","user-select":"","-webkit-user-drag":"","-webkit-user-select":""});
     for(let i = 0;i < d.children.length; i++) delStyle(d.children[i]);
 }
@@ -182,7 +191,7 @@ function delStyle(d){
 
     //窗口提升
         //判断a在b上面还是下面+检测
-function tOrb(a, b){
+var tOrb = this.tOrb =(a,b)=>{
     let t = $.tt(a,"t");
     let o = $.tt(a,"b");
     let l = $.tt(a,"l");
@@ -192,7 +201,7 @@ function tOrb(a, b){
     let l1 = $.tt(b,"l");
     let r1 = $.tt(b,"r");
     //fixed:不加等号会导致完全重叠在一起的窗口无法分离
-    if(((t>=t1&&t<=o1)||(o>=t1&&o<=o1)||(t1>=t&&t1<=o)||(o1>=t&&o1<=o))&&((l>=l1&&l<=r1)||(r>=l1&&r<=r1)||(l1>=l&&l1<=r)||(r1>=l&&r1<=r))){//判断是否覆盖
+    if(((t>=t1&&t<=o1)||(o>=t1&&o<=o1)||(t1>=t&&t1<=o)||(o1>=t&&o1<=o))&&((l>=l1&&l<=r1)||(r>=l1&&r<=r1)||(l1>=l&&l1<=r)||(r1>=l&&r1<=r))){
         if(getZ(a) > getZ(b)) return "a";//a在上
         else if(getZ(a) < getZ(b)) return "b";//a在下
         else return "s";//两个一样
@@ -200,16 +209,68 @@ function tOrb(a, b){
 }
 
         //dark名鼎鼎的zIndex方法 fixme:搞完了，但还是有点问题，4-3L时由于没有记录相对位置仍然会出现问题，可能的解决方案：先把非e记录进数组再按zindex执行递归
-function zIndex(o){
-    setZ(o,false,50);
+        //2022.3.11：终于有希望解决所有问题了！！
+function zIndex(o,isMoving){
+    /*//老代码
+    setZ(o,50);
     for(let i = 0; i < $(".ds-win").length; i++){
         if(tOrb(o,$(".ds-win")[i]) != "e" && !$(".ds-win")[i].hasClass("ds-zin") && !$(".ds-win")[i].hasClass("ds-ontop") && $(".ds-win")[i].css("display") != "none"){
             o.addClass("ds-zin");
-            setZ(o,false,zIndex($(".ds-win")[i]) + 1,"zin-l");
+            setZ(o,zIndex($(".ds-win")[i]) + 1,"zin-l");
             o.removeClass("ds-zin");
         }
     }
-    return getZ(o);
+    return getZ(o);*/
+
+    //用于将移动完毕的窗口分开处理
+    var w = $(".ds-win");
+    if(isMoving){
+        //todo:很简单的，就把它弄到和它在一起的窗口的最大值加1
+        
+    }
+    else{
+        var pN = [];
+        for(let i = 0; i < w.length; i++){
+            var t = tOrb(w[i],o);
+            if((t == "a" || t == "s") && w[i] != o) pN[pN.length] = w[i];
+        }
+        var finalZ = 50;
+        for(let i = 0; i < pN.length; i++) finalZ = Math.max(getZ(pN[i]) + 1, finalZ);
+        setZ(o,finalZ);
+    }
+    //无论如何都会执行这个检查并清除空层的机制，但累计到5才会清除一次以免卡顿
+    if(!(zIndexFallCount > 5)){//note:这个!是调试用的
+        var cDs = [];
+        for(let i = 0; i < w.length; i++) checkR(w[i], i);
+        //console.log(cDs); //succeed:成功！
+        for(let i = 0; i < cDs.length; i++){
+            var treeZ = [], emptyZ = [];
+            for(let j = 0; j < w.length; j++) if(w[j].attr("cD") == cDs[i]) treeZ[getZ(w[j]) - 50] = true;
+            for(let j = 0; j < treeZ.length; j++){
+                if(!treeZ[j]){
+                    //todo:让该层上的窗口都往下一层
+                }
+            }
+        }
+        zIndexFallCount = 0;
+    }
+    else zIndexFallCount++;
+    //递归处
+    function checkR(o,n){
+        if(!o.attr("cD")){
+            o.attr("cD",n);
+            cDs[cDs.length] = n;
+        }
+        var r = [[],[]];
+        for(let i = 0; i < w.length; i++){
+            if(tOrb(o,w[i]) != "e" && !w[i].attr("cD")){
+                r[0][r[0].length] = w[i];
+                r[1][r[1].length] = i;
+                w[i].attr("cD",o.attr("cD"));
+            }
+        }
+        for(let i = 0; i < r[0].length; i++) checkR(r[0][i],r[1][i]);
+    }
 }
     //end窗口提升
 //end窗口
@@ -225,12 +286,12 @@ function closeCls(isTouch, e){
             isToCloseCls = false;
             return;
         }
-        setTimeout(_=>{isToCloseCls = true;console.log("true");},0);
-        setTimeout(_=>{isToCloseCls = false;console.log("false");},450);
+        setTimeout(_=>{isToCloseCls = true;/*console.log("true");*/},0);
+        setTimeout(_=>{isToCloseCls = false;/*console.log("false");*/},450);
     }
     else c();
     function c(){
-        setZ(t,false,50,"cls");
+        setZ(t,50,"cls");
         t.hide();
     }
 }
@@ -264,7 +325,7 @@ var toolTip = this.toolTip = (t,h,d,s)=>{
     t.addClass("ds-tp");
     t.append(e);
     registerEvents("tt");
-    function g(d){e.addClass("ds-tt-" + d).setAttribute("data-tt-o","ds-tt-" + d);}
+    function g(d){e.addClass("ds-tt-" + d).attr("data-tt-o","ds-tt-" + d);}
 }
 
     //对齐tooltip
@@ -273,7 +334,7 @@ function alignToolTip(tp,isFixed){
     if(!tp.hasClass("ds-tp")) return;
     let t = tp.querySelector(".ds-tt");//不管一个元素内含多个tooltip，note:由于不是document域，无法使用luery获取
     //还原原来的样式
-    if(isFixed !== true) rAC().addClass(t.getAttribute("data-tt-o"));
+    if(isFixed !== true) rAC().addClass(t.attr("data-tt-o"));
     //尝试次数不超过5次
     for(let i = 0; i < 5; i++){
         //toFixed()是为了防止渲染精度导致的tooltip随机抖动，偏差很小不要紧
@@ -320,7 +381,7 @@ function alignToolTip(tp,isFixed){
         else t.addClass("ds-tt-" + a);
         alignToolTip(t.getParentByClass("ds-tp"),true);
     }
-    function hasTriangle(){let o = t.getAttribute("data-tt-o");return o == "ds-tt-t-t" || o == "ds-tt-b-t" || o == "ds-tt-l-t" || o == "ds-tt-r-t";}
+    function hasTriangle(){let o = t.attr("data-tt-o");return o == "ds-tt-t-t" || o == "ds-tt-b-t" || o == "ds-tt-l-t" || o == "ds-tt-r-t";}
     function rAC(){return t.removeClass("ds-tt-t").removeClass("ds-tt-t-t").removeClass("ds-tt-b").removeClass("ds-tt-b-t").removeClass("ds-tt-l").removeClass("ds-tt-l-t").removeClass("ds-tt-r").removeClass("ds-tt-r-t");}
 }
 //end提示框
@@ -408,7 +469,7 @@ var dropDown = this.dropDown = (er,ee,noPro)=>{
         return true;
     }
 
-        //检查是否冒泡事件fixme:
+        //fixme:检查是否冒泡事件
     function checkDDProp(obj){
         if(er.toString().indexOf("Collection") != -1){
             //console.log("a");
@@ -427,7 +488,7 @@ var dropDown = this.dropDown = (er,ee,noPro)=>{
 var closeDropDown = this.closeDropDown = _=>{
     for(let i = 0; i < $(".ds-dd").length; i++){
         $(".ds-dd")[i].css({"display":"","top":"","left":""});
-        if($(".ds-dd")[i].getAttribute("style") === "") $(".ds-dd")[i].removeAttribute("style");
+        if($(".ds-dd")[i].attr("style") === "") $(".ds-dd")[i].attr("style",null);
     }
 }
 
