@@ -134,13 +134,14 @@ function pressOnWin(isTouch, e){
         isToZIndex = true;
         //zinmax(); //note:暂时关闭
         isMoving = true;
+        var t = $.tt(move,"t"), l = $.tt(move,"l");
         if(isTouch){
-            deltaTop = e.touches[0].pageY - $.tt(move,"t");
-            deltaLeft = e.touches[0].pageX - $.tt(move,"l");
+            deltaTop = e.touches[0].pageY - t;
+            deltaLeft = e.touches[0].pageX - l;
         }
         else{
-            deltaTop = e.pageY - $.tt(move,"t");
-            deltaLeft = e.pageX - $.tt(move,"l");
+            deltaTop = e.pageY - t;
+            deltaLeft = e.pageX - l;
         }
     }
 }
@@ -210,6 +211,7 @@ var tOrb = this.tOrb =(a,b)=>{
 
         //dark名鼎鼎的zIndex方法 fixme:搞完了，但还是有点问题，4-3L时由于没有记录相对位置仍然会出现问题，可能的解决方案：先把非e记录进数组再按zindex执行递归
         //2022.3.11：终于有希望解决所有问题了！！
+        //2022.3.20：终于解决所有问题了！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
 function zIndex(o,isMoving){
     /*//老代码
     setZ(o,50);
@@ -221,9 +223,11 @@ function zIndex(o,isMoving){
         }
     }
     return getZ(o);*/
-
-    //用于将移动完毕的窗口分开处理
+    //end 老代码
+    
+    //新代码
     var w = $(".ds-win");
+    //用于将移动完毕的窗口分开处理
     if(isMoving){
         //todo:很简单的，就把它弄到和它在一起的窗口的最大值加1
         
@@ -232,44 +236,45 @@ function zIndex(o,isMoving){
         var pN = [];
         for(let i = 0; i < w.length; i++){
             var t = tOrb(w[i],o);
-            if((t == "a" || t == "s") && w[i] != o) pN[pN.length] = w[i];
+            if((t == "a" || t == "s") && w[i] != o) pN.push(w[i]);
         }
-        var finalZ = 50;
+        //console.log(pN);
+        var finalZ = getZ(o);
         for(let i = 0; i < pN.length; i++) finalZ = Math.max(getZ(pN[i]) + 1, finalZ);
         setZ(o,finalZ);
     }
-    //无论如何都会执行这个检查并清除空层的机制，但累计到5才会清除一次以免卡顿
-    if(!(zIndexFallCount > 5)){//note:这个!是调试用的
-        var cDs = [];
-        for(let i = 0; i < w.length; i++) checkR(w[i], i);
-        //console.log(cDs); //succeed:成功！
-        for(let i = 0; i < cDs.length; i++){
-            var treeZ = [], emptyZ = [];
-            for(let j = 0; j < w.length; j++) if(w[j].attr("cD") == cDs[i]) treeZ[getZ(w[j]) - 50] = true;
-            for(let j = 0; j < treeZ.length; j++){
-                if(!treeZ[j]){
-                    //todo:让该层上的窗口都往下一层
-                }
+    //累计到5才会真正执行一次，以免频繁清除空层造成的卡顿
+    if(zIndexFallCount > 5){
+        console.log("fallZindex");
+        var cDs = {trees:[]}, checkedEle = [];
+        //不需要对已经有树的元素重复一遍了，因为一棵树只要被发现就会被完全遍历
+        for(let i = 0; i < w.length; i++) if(!checkedEle[i]) checkR(w[i], i, cDs.trees.length);
+        //console.log(cDs); //succeed:成功！cDs记录了所有的树的cD id。//fixme:只记录id真的烦，改为记录整个树吧
+        for(let i = 0; i < cDs.trees.length; i++){
+            var treeZ = [];
+            for(let j = 0; j < cDs.trees[i].length; j++) treeZ[getZ(cDs.trees[i][j]) - 50] = true;
+            //console.log(treeZ);
+            for(let j = 0; j < treeZ.length; j++) if(!treeZ[j]) for(let k = 0; k < cDs.trees[i].length; k++){
+                var z = getZ(cDs.trees[i][k]);
+                if(z - 50 > j) setZ(cDs.trees[i][k],z - 1);
             }
         }
+        //收尾工作
         zIndexFallCount = 0;
     }
     else zIndexFallCount++;
     //递归处
-    function checkR(o,n){
-        if(!o.attr("cD")){
-            o.attr("cD",n);
-            cDs[cDs.length] = n;
-        }
+    function checkR(o,wID,treeID){
+        checkedEle[wID] = true;//标记该元素已经归入一棵树
+        if(cDs.trees[treeID] == undefined) cDs.trees[treeID] = [];
+        cDs.trees[treeID].push(o);//将该元素真正记录到树列表中
         var r = [[],[]];
-        for(let i = 0; i < w.length; i++){
-            if(tOrb(o,w[i]) != "e" && !w[i].attr("cD")){
-                r[0][r[0].length] = w[i];
-                r[1][r[1].length] = i;
-                w[i].attr("cD",o.attr("cD"));
-            }
+        for(let i = 0; i < w.length; i++) if(!checkedEle[i] && tOrb(o,w[i]) != "e"){
+            r[0].push(w[i]);
+            r[1].push(i);
+            checkedEle[i] = true;
         }
-        for(let i = 0; i < r[0].length; i++) checkR(r[0][i],r[1][i]);
+        for(let i = 0; i < r[0].length; i++) checkR(r[0][i],r[1][i],treeID);
     }
 }
     //end窗口提升
@@ -374,7 +379,7 @@ function alignToolTip(tp,isFixed){
         break;
     }
     function fixToolTip(a){
-        //fixme:.ds-cls提示框失灵
+        //fixme:.ds-cls提示框偶然抽风失灵
         //console.log(tp,t);
         rAC();
         if(hasTriangle()) t.addClass("ds-tt-" + a + "-t");
@@ -465,7 +470,7 @@ var dropDown = this.dropDown = (er,ee,noPro)=>{
 
         //检查菜单位置
     function checkDropDownPos(){
-        //TODO:
+        //todo:
         return true;
     }
 
