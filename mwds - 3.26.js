@@ -1,12 +1,11 @@
 ﻿"use strict";
-var mwds = new function(){
+var MWDS = function(){
 /* 为了防止压缩代码时破坏代码，我没有开启变量缩短选项，而是在代码中使用简短的字符变量“手动”压缩代码，同时保留重要变量的长名称。
  * 不用担心，看得懂的
  * Herobrine保佑 永不出bug
  */
-//初始化代码--------------------------------------------------------------------------------------------------------
 console.log("mwds.js - MoreWindows ©LJM12914\r\noink组件。 https://github.com/openink/mwds");
-
+//全局变量区
     //内部luery指代
 var $ = luery,
     //遮罩
@@ -28,13 +27,7 @@ resizeTimer = null,
 isToZIndex = false,
     //窗口z-index总体下降计数
 zIndexFallCount = 0;
-
-    //遮罩层初始化
-createMask();//弹出框/菜单遮罩创建
-    //初始化注册通用事件
-iniGenEvents();
-
-//end初始化代码--------------------------------------------------------------------------------------------------------
+//end全局变量区
 
 //公共函数/方法区
     //快速获取z-index
@@ -47,64 +40,66 @@ function setZ(o,p){
 }
 
     //窗口越界检测
-function checkWinPos(o){
+function checkWinPos(o){//上和左比下和右更重要，所以放在最后
     if($.rect(o,"fr") > document.body.clientWidth) o.css("left",document.body.clientWidth - $.dom(o,"mbp--pbm") + "px");//此处不考虑横向滚动条，因此absolute元素也不能拖到右边去
     if($.rect(o,"fb") > innerHeight && !o.hasClass("ds-a")) o.css("top",innerHeight - $.dom(o,"mbp||bpm") + "px");
-    //上和左比下和右更重要，所以放在最后
     if($.rect(o,"fl") < 0) o.css("left",0);
     if($.rect(o,"ft") < 0 && !o.hasClass("ds-a")) o.css("top",0);//fixed:2022.2.5 ds-a被移动到视口最上方时闪至top:0px，下同
     if($.rect(o,"t") < 0)  o.css("top",0);
 }
 //end公共函数/方法区
 
+//初始化
+    //遮罩层初始化
+createMask();//弹出框/菜单遮罩创建
+    //注册所有事件
+registerEvents();
+//end初始化
+
 //注册事件
-function iniGenEvents(){
-    $.Events($("*"),"mousedown",e=>{
-        checkCloseDropDown(e,true);
-        checkWinPress(false,e);
-    });
-    $.Events($("*"),"mousemove",e=>{moveWindows(false,e);});
-    $.Events($("*"),"mouseup",e=>{
-        checkCloseDropDown(e,false);
-        moveUp();
-    });
-    $.Events($("*"),"touchstart",e=>{checkWinPress(true,e);});
-    $.Events($("*"),"touchmove",e=>{moveWindows(true,e)});
-    $.Events($("*"),"touchend",e=>{moveUp();});
-    window.onresize = e=>{
-        if(resizeTimer) clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(_=>{
-            var a = $(".ds-win");//argument:这里用.ds-mov好还是.ds-win好？不能移动的窗口是否需要限制其移出视口？
-            for(let i = 0; i < a.length; i++) checkWinPos(a[i]);
-        },100);
+function registerEvents(eToRegister){
+    if(eToRegister !== undefined) eval(eToRegister + "();");
+    else any();mov();cls();tt();dd();
+    //todo:important:避免多次注册事件
+    function any(){//通用
+        $.Events($("*"),"mousedown",e=>{
+            checkCloseDropDown(e,true);
+            checkWinPress(false,e);
+        });
+        $.Events($("*"),"mousemove",e=>{moveWindows(false,e);});
+        $.Events($("*"),"mouseup",e=>{
+            checkCloseDropDown(e,false);
+            moveUp();
+        });
+        $.Events($("*"),"touchstart",e=>{checkWinPress(true,e);});
+        $.Events($("*"),"touchmove",e=>{moveWindows(true,e)});
+        $.Events($("*"),"touchend",e=>{moveUp();});
+        //$Events($("*"),"click",e=>{});
     }
-}
-function deltaEvents(o,type){
-    switch(type){
-        case "mov":
-            $.Events(o,"mousedown",e=>{pressOnWin(false,e);});
-            $.Events(o,"touchstart",e=>{pressOnWin(true,e);});
-            break;
-        case "cls":
-            $.Events(o,"dblclick",e=>{closeCls(false,e);});
-            //fixme:这里由于子节点的touchstart传不上来，无法在触摸屏点击窗口内容时出现提示。
-            $.Events(o,"touchstart",e=>{closeCls(true,e);});
-            break;
-        case "tt":
-            $.Events(o,"mouseover",e=>{alignToolTip(e.target);});
-            $.Events(o,"touchstart",e=>{alignToolTip(e.target);});
-            break;
-        case "dd"://点击菜单任意子元素后关闭所有菜单，ds-nocls除外
-            $.Events(o,"mousedown",e=>{pressedMenuItem = e.target;});
-            $.Events(o,"mouseup",e=>{
+    function mov(){//移动
+        //这里不需要抛异常，没有窗口要移动很正常，反而更轻松了
+        try{$.Events($(".ds-win.ds-mov"),"mousedown",e=>{pressOnWin(false,e);});}catch(e){}
+        try{$.Events($(".ds-win.ds-mov"),"touchstart",e=>{pressOnWin(true,e);});}catch(e){}
+    }
+    function cls(){//可关闭窗口
+        try{$.Events($(".ds-win.ds-cls"),"dblclick",e=>{closeCls(false,e);});}catch(e){}
+        //fixme:这里由于子节点的touchstart传不上来，无法在触摸屏点击窗口内容时出现提示。
+        try{$.Events($(".ds-win.ds-cls"),"touchstart",e=>{closeCls(true,e);});}catch(e){}
+    }
+    function tt(){//提示框
+        try{$.Events($(".ds-tp"),"mouseover",e=>{alignToolTip(e.target);});}catch(e){}
+        try{$.Events($(".ds-tp"),"touchstart",e=>{alignToolTip(e.target);});}catch(e){}
+    }
+    function dd(){//菜单
+        //点击菜单任意子元素后关闭所有菜单，ds-nocls除外
+        try{$.Events($(".ds-dd"),"mousedown",e=>{pressedMenuItem = e.target;});}catch(e){}
+        try{
+            $.Events($(".ds-dd"),"mouseup",e=>{
                 if(pressedMenuItem === e.target && !e.target.hasClass("ds-dd") && !e.target.getParentByClass("ds-dd").hasClass("ds-nocls") && !e.button) closeDropDown();
                 pressedMenuItem = undefined;
             });
-            break;
-        case "exp":
-
-            break;
-        default: throw new TypeError("invalid argument");
+        }
+        catch(e){}
     }
 }
 //end注册事件
@@ -113,11 +108,9 @@ function deltaEvents(o,type){
     //窗口注册
 var win = this.win = obj=>{
     obj.addClass("ds-win");
-    if(obj.hasClass("ds-mov")) deltaEvents(obj,"mov");
-    if(obj.hasClass("ds-cls")){
-        deltaEvents(obj,"cls");
-        toolTip(obj,"双击空闲区域可关闭窗口","b",false);
-    }
+    registerEvents("mov");
+    registerEvents("cls");
+    if(obj.hasClass("ds-cls")) toolTip(obj,"双击空闲区域可关闭窗口","b",false);
     zIndex(obj);
 }
     //end窗口注册
@@ -183,11 +176,9 @@ function moveUp(){
 
         //递归删除没用style
 function delStyle(d){
-    //let s = d.attr("style");
-    //if(s == "cursor: grabbing; user-select: none; -webkit-user-drag: none;") d.attr("style",null);
-    //else d.css({"cursor":"","user-select":"","-webkit-user-drag":"","-webkit-user-select":""});
-    d.css({"cursor":"","user-select":"","-webkit-user-drag":"","-webkit-user-select":""});
-    if(!d.attr("style")) d.attr("style",null);
+    let s = d.attr("style");
+    if(s == "cursor: grabbing; user-select: none; -webkit-user-drag: none;") d.attr("style",null);
+    else d.css({"cursor":"","user-select":"","-webkit-user-drag":"","-webkit-user-select":""});
     for(let i = 0;i < d.children.length; i++) delStyle(d.children[i]);
 }
     //end移动
@@ -315,7 +306,7 @@ var toolTip = this.toolTip = (t,h,d,s)=>{
     t.addClass("ds-tp");
     if(t.css("height") == "auto" && t.css("width") == "auto") t.css("display","inline-block");
     t.append(e);
-    deltaEvents(t,"tt");
+    registerEvents("tt");
     function g(d){e.addClass(`ds-tt-${d}`).attr("data-tt-o",`ds-tt-${d}`);}
 }
 
@@ -374,7 +365,7 @@ function alignToolTip(tp,isFixed){
         break;
     }
     function fixToolTip(a){
-        //fixed:.ds-cls提示框偶然抽风失灵
+        //fixme:.ds-cls提示框偶然抽风失灵
         console.log(tp,t);
         rAC();
         if(hasTriangle()) t.addClass("ds-tt-" + a + "-t");
@@ -430,14 +421,13 @@ var hidePopUp = this.hidePopUp = d=>{//传入序号！！！
 //菜单
     //绑定菜单
 var dropDown = this.dropDown = (er,ee,noPro)=>{
-    deltaEvents(ee,"dd");
+    let t, l;
     $.Events(er,"contextmenu",e=>{
-        let t, l;
         //console.log(e.target,er);
         if(noPro && checkDDProp(e.target)) return;
         e.preventDefault();
         ee.css("display","block");
-        for(let i = 0; i < 12914; i++){//hack:反正绝对不可能超过10次就出去了，不管这里是多少了
+        for(let i = 0; i < 12914; i++){//反正绝对不可能超过10次就出去了，不管这里是多少了
             if(ee.hasClass("ds-dd-bl")){
                 t = e.clientY + 8;
                 l = e.clientX - $.dom(ee,"bp--pb") - 8;
@@ -454,7 +444,7 @@ var dropDown = this.dropDown = (er,ee,noPro)=>{
                 t = e.clientY + 8;
                 l = e.clientX + 8;
             }
-            if(checkDropDownPos()){
+            if(checkDropDownPos()){//JSON对象不允许插值，只能分开
                 ee.css({
                     top:t + "px",
                     left:l + "px"
@@ -517,19 +507,7 @@ function checkCloseDropDown(e,isDown){
 //扩展框
 var exp = this.exp = (tar, exp, direction, trigger, noPro)=>{
     tar.addClass("ds-ep");
-    //exp.addClass("ds-exp");
-    if(exp instanceof Node){
-        if(!exp.isChildOf(tar)){
-            //note:这边不用考虑exp不在tar内部最末尾的问题，因为无论在不在末尾都能用
-            //已经说过不能在一个元素里搞多个扩展框了，还有人要搞的话就让他自己承担责任好了，我们不给他兜底了
-            var realexp = exp.cloneNode(true);
-            tar.append(realexp);
-            exp = realexp;
-        }
-    }
-    else{
-        var alexp = document.createElement()
-    }
+    exp.addClass("ds-exp");
 }
 //end扩展框
 }
