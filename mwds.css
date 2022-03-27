@@ -88,10 +88,6 @@
     }
 }
 @keyframes ontop{0%,100%{z-index: 999;}}
-*{
-    /*cursor不可更改*/
-    cursor: initial;
-}
 body{
     overflow: auto;
     margin: 0;
@@ -116,6 +112,7 @@ html{font-size: 16px;}
 }
 .ds-a{position: absolute !important;}
 .ds-mov{cursor: grab;}
+.ds-mov *{cursor: initial;}
 .ds-tra{
     background-color: #ffffff00;
     transition: background-color .2s ease-in-out;
@@ -195,7 +192,7 @@ html{font-size: 16px;}
     position: relative;
 }
 .ds-exp{
-    
+
 }
 :hover > .ds-exp.ds-exp-h{
     /*display不可更改*/

@@ -1,9 +1,73 @@
 ﻿"use strict";
 var mwds = new function(){
-/* 为了防止压缩代码时破坏代码，我没有开启变量缩短选项，而是在代码中使用简短的字符变量“手动”压缩代码，同时保留重要变量的长名称。
- * 不用担心，看得懂的
- * Herobrine保佑 永不出bug
- */
+/*                --------------------------------------------------
+ *                |                                                |
+ *                |                                                |
+ *                |        ----------            ----------        |
+ *                |        |        |            |        |        |
+ *                |        |        |            |        |        |
+ *                |        |        |            |        |        |
+ *                |        ----------            ----------        |
+ *                |                   ==========                   |
+ *                |                   |        |                   |
+ *                |                   |        |                   |
+ *                |          ┌--------┘        └--------┐          |
+ *                |          |                          |          |
+ *                |          |        ==========        |          |
+ *                |          |        |        |        |          |
+ *                |          |        |        |        |          |
+ *                |          |        |        |        |          |
+ *                |          ----------        ----------          |
+ *                |                                                |
+ *                |                                                |
+ *                --------------------------------------------------
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                        |                                |
+ *                    --------------------  ---------------------
+ *                    |                  |  |                   |
+ *                    |                  |  |                   |
+ *                    |                  |  |                   |
+ *                    |                  |  |                   |
+ *                    |                  |  |                   |
+ *                    |                  |  |                   |
+ *                    |                  |  |                   |
+ *                    |                  |  |                   |
+ *                    |                  |  |                   |
+ *                    |                  |  |                   |
+ *                    |                  |  |                   |
+ *                    |                  |  |                   |
+ *                    |                  |  |                   |
+ *                    --------------------  ---------------------
+ * 
+ *                                Creeper保佑 永无bug
+*/
 //初始化代码--------------------------------------------------------------------------------------------------------
 console.log("mwds.js - MoreWindows ©LJM12914\r\noink组件。 https://github.com/openink/mwds");
 
@@ -11,17 +75,20 @@ console.log("mwds.js - MoreWindows ©LJM12914\r\noink组件。 https://github.co
 var $ = luery,
     //遮罩
 overlay = $("#ds-overlay"),
-    //弹出框关闭flag
-isToClosePopUp = false,
     //窗口移动flag
 isMoving = false,
     //窗口移动跨方法变量
 deltaTop, deltaLeft, move,
     //窗口关闭flag
 isToCloseCls = false,
+    //弹出框关闭flag
+isToClosePopUp = false,
     //菜单关闭flag
 isToCloseDropDown = false,
 pressedMenuItem,
+    //扩展框关闭flag
+isToCloseExp = false,
+pressedExpItem,
     //窗口超限探测优化flag
 resizeTimer = null,
     //窗口初次移动zIndex flag
@@ -54,6 +121,11 @@ function checkWinPos(o){
     if($.rect(o,"fl") < 0) o.css("left",0);
     if($.rect(o,"ft") < 0 && !o.hasClass("ds-a")) o.css("top",0);//fixed:2022.2.5 ds-a被移动到视口最上方时闪至top:0px，下同
     if($.rect(o,"t") < 0)  o.css("top",0);
+}
+
+    //todo:统一的关闭检查方案。在鼠标按下外部元素或按下内部元素且无ds-nocls时关闭元素。
+function checkClose(type, supportsNoCls){
+    
 }
 //end公共函数/方法区
 
@@ -101,10 +173,16 @@ function deltaEvents(o,type){
                 pressedMenuItem = undefined;
             });
             break;
-        case "exp":
+        case "exp-c":
+            $.Events(o,"click",e=>{
 
+            });
             break;
-        default: throw new TypeError("invalid argument");
+        case "exp-d":
+            $.Events(o,"dblclick",e=>{
+
+            })
+        default: $.E();
     }
 }
 //end注册事件
@@ -310,7 +388,7 @@ var toolTip = this.toolTip = (t,h,d,s)=>{
             if(s) g("r-t");
             else g("r");
             break;
-        default: throw new TypeError("invalid direction argument");
+        default: $.E("direction");
     }
     t.addClass("ds-tp");
     if(t.css("height") == "auto" && t.css("width") == "auto") t.css("display","inline-block");
@@ -350,7 +428,7 @@ function alignToolTip(tp,isFixed){
             t.css("margin-top",(-($.dom(tp,"||") + $.dom(t,"bp||pb")) / 2).toFixed(2) + "px");
         }
         //测试是否超出界限，若超出则重新进行
-        console.log($.rect(t,"fr"),$.rect(t,"fb"));
+        //console.log($.rect(t,"fr"),$.rect(t,"fb"));
         if($.rect(t,"fr") > document.body.clientWidth){
             if(!i) fixToolTip("l");
             else if(i == 1) fixToolTip("t");
@@ -437,7 +515,7 @@ var dropDown = this.dropDown = (er,ee,noPro)=>{
         if(noPro && checkDDProp(e.target)) return;
         e.preventDefault();
         ee.css("display","block");
-        for(let i = 0; i < 12914; i++){//hack:反正绝对不可能超过10次就出去了，不管这里是多少了
+        for(let i = 0; i < 12914; i++){//hack:反正绝对不可能超过10次，不管这里是多少了
             if(ee.hasClass("ds-dd-bl")){
                 t = e.clientY + 8;
                 l = e.clientX - $.dom(ee,"bp--pb") - 8;
@@ -482,18 +560,19 @@ function checkDDProp(obj){
         if(er === obj) return false;
         else return true;
     }
-    throw new TypeError("?");
+    $.E("?");
 }
 
     //关闭菜单
 var closeDropDown = this.closeDropDown = _=>{
-    for(let i = 0; i < $(".ds-dd").length; i++){
-        $(".ds-dd")[i].css({"display":"","top":"","left":""});
-        if($(".ds-dd")[i].attr("style") === "") $(".ds-dd")[i].attr("style",null);
+    var dd = $(".ds-dd");
+    for(let i = 0; i < dd.length; i++){
+        dd[i].css({"display":"","top":"","left":""});
+        if(dd[i].attr("style") === "") dd[i].attr("style",null);
     }
 }
 
-    //点击所有元素时检查是否需要关闭菜单
+    //点击所有元素时检查是否需要关闭菜单todo:统一菜单与扩展框关闭逻辑（最好把弹出框也统一进来）
 function checkCloseDropDown(e,isDown){
     //这个就不用解释了吧
     let obj = e.target;
@@ -515,21 +594,51 @@ function checkCloseDropDown(e,isDown){
 //end菜单
 
 //扩展框
-var exp = this.exp = (tar, exp, direction, trigger, noPro)=>{
-    tar.addClass("ds-ep");
-    //exp.addClass("ds-exp");
-    if(exp instanceof Node){
-        if(!exp.isChildOf(tar)){
-            //note:这边不用考虑exp不在tar内部最末尾的问题，因为无论在不在末尾都能用
-            //已经说过不能在一个元素里搞多个扩展框了，还有人要搞的话就让他自己承担责任好了，我们不给他兜底了
-            var realexp = exp.cloneNode(true);
-            tar.append(realexp);
-            exp = realexp;
-        }
-    }
+var exp = this.exp = (tar, exp, d, tri, noPro)=>{
+    var alexp, isExistNode = exp instanceof Node,
+    isNoStyle = (!isExistNode)?true:!(
+        exp.hasClass("ds-exp-tl") || exp.hasClass("ds-exp-tr") ||
+        exp.hasClass("ds-exp-bl") || exp.hasClass("ds-exp-br") ||
+        exp.hasClass("ds-exp-t")  || exp.hasClass("ds-exp-b")  ||
+        exp.hasClass("ds-exp-l")  || exp.hasClass("ds-exp-r")  ),
+    isNoTrigger = (!isExistNode)?true:!(exp.hasClass("ds-exp-h") || exp.hasClass("ds-exp-c") || exp.hasClass("ds-exp-d")),
+    isValidStyle = (d == "tl" || d == "tr" || d == "bl" || d == "br" || d == "t" || d == "b" || d == "l" || d == "r"),
+    isValidTrigger = (tri == "h" || tri == "c" || tri == "d");
+    //获取操作对象
+    if(isExistNode) alexp = exp.cloneNode(true);//note:这边不用考虑exp不在tar内部最末尾的问题
     else{
-        var alexp = document.createElement()
+        alexp = document.createElement("div").addClass("ds-exp");
+        alexp.innerHTML = exp;
     }
+    //end获取操作对象
+    //添加配置或选择默认配置
+    //console.log(isExistNode,isNoStyle,isNoTrigger,isValidStyle,isValidTrigger);
+    if(isValidStyle){
+        if(!isNoStyle) alexp.removeClass("ds-exp-tl").removeClass("ds-exp-tr").removeClass("ds-exp-bl").removeClass("ds-exp-br").removeClass("ds-exp-t").removeClass("ds-exp-b").removeClass("ds-exp-l").removeClass("ds-exp-r");
+        lst(d);
+    }
+    else if(isNoStyle) $.E("style");
+    if(isValidTrigger){
+        if(!isNoTrigger) alexp.removeClass("ds-exp-h").removeClass("ds-exp-c").removeClass("ds-exp-d");
+        lst(tri);
+    }
+    else if(isNoTrigger) $.E("trigger");
+    //end添加配置或选择默认配置
+    //最终处理
+    alexp.addClass("ds-exp");
+    tar.addClass("ds-ep");
+    tar.append(alexp);
+    bindTriggerEvents();
+    bindCloseExp();
+    if(exp.isChildOf(tar)) exp.remove();//避免出现两个东西
+    function bindTriggerEvents(){
+        if(alexp.hasClass("ds-exp-c")) deltaEvents(tar,"exp-c");
+        else if(alexp.hasClass("ds-exp-d")) deltaEvents(tar,"exp-d");
+    }
+    function bindCloseExp(){
+
+    }
+    function lst(c){alexp.addClass(`ds-exp-${c}`);}
 }
 //end扩展框
 }

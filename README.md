@@ -162,7 +162,7 @@ el == mwds.hidePopUp(n); //el===$("#element")
 mwds.hidePopUp();
 ```
 
-## 四、菜单（DOING：兼容触摸屏）
+## 四、菜单（TODO：兼容触摸屏）（TODO：优化注册流程，支持HTML注册、注册配置）
 
 浏览器的右键菜单以无用著称（除了最下面那个“检查”）。
 
@@ -195,7 +195,7 @@ mwds.dropDown($("#no-propagation"),el3,true); //禁用事件冒泡
 
 `el3`：菜单元素。
 
-`<noPropagation>`：是否禁用事件冒泡。在点击目标元素的子元素时菜单会弹出，这**是刻意的设计**。若不需要在点击目标元素的子元素时弹出菜单，则可在注册菜单时添加此参数为`true`。
+`[noPropagation]`：是否禁用事件冒泡。在点击目标元素的子元素时菜单会弹出，这**是刻意的设计**。若不需要在点击目标元素的子元素时弹出菜单，则可在注册菜单时添加此参数为`true`。
 
 - 假设`no-propagation-inner`是`no-propagation`的子元素，那么在上述示例代码中，仅有`el2`会在`#no-propagation-inner`被右键点击时弹出，而`el`和`el2`在`#element-inner`被右键点击时都会弹出。
 
@@ -258,18 +258,20 @@ mwds仅提供关闭所有菜单的方法调用，这**是刻意的设计**。若
 ### 新建（TODO）
 
 ```javascript
-mwds.exp($("#target-element"), "expansion html", <direction>, <trigger>, <noPropagation>);
+mwds.exp($("#target-element"), "expansion html", [direction], [trigger], [noPropagation], [noCls]);
 ```
 
 `$("#target-element")`：要放置扩展框的元素。
 
 `expansion html`：在扩展框中展现的东西，允许传入已有元素或HTML，**在传入HTML时不要在最外层包裹容器**。
 
-`<direction>`：扩展框的展示方向，与提前手动添加class效果一样，详见下文class表。将class名去掉`ds-exp-`作为本参数的参数值。
+`[direction]`：扩展框的展示方向，与提前手动添加class效果一样，详见下文class表。将class名去掉`ds-exp-`作为本参数的参数值。
 
-`<trigger>`：扩展框的触发条件，与提前手动添加class效果一样，详见下文class表。将class名去掉`ds-exp-`作为本参数的参数值。
+`[trigger]`：扩展框的触发条件，与提前手动添加class效果一样，详见下文class表。将class名去掉`ds-exp-`作为本参数的参数值。
 
-`<noPropagation>`：与菜单`ds-dd`一样，是否禁用事件冒泡。
+`[noPropagation]`：与菜单`ds-dd`一样，是否禁用事件冒泡。仅对触发条件为左键单击或左键双击的扩展框生效，hover触发的不生效。
+
+`[noCls]`：
 
 HTML结构和提示框很像：
 
@@ -282,6 +284,8 @@ HTML结构和提示框很像：
 
 ### class表（TODO）
 
+可以在注册**前**手动添加class，也可以在注册时传入相关参数。传入的参数会无条件覆盖原有的class。
+
 扩展框按展示位置分为两类：
 
 第一类是**指针型**扩展框，与菜单一样在光标的角落弹出。
@@ -290,19 +294,20 @@ HTML结构和提示框很像：
 
 扩展框按触发条件分为三类：通过hover触发、通过左键单击触发、通过左键双击触发。
 
-|    class    |         描述         |     缺省     |
-| :---------: | :------------------: | :----------: |
-| `ds-exp-tl` | 在指针**左上角**弹出 | `ds-exp-br`  |
-| `ds-exp-tr` | 在指针**右上角**弹出 | `ds-exp-br`  |
-| `ds-exp-bl` | 在指针**左下角**弹出 | `ds-exp-br`  |
-| `ds-exp-br` | 在指针**右下角**弹出 | 本身为缺省值 |
-| `ds-exp-t`  |  在元素**上方**弹出  | `ds-exp-br`  |
-| `ds-exp-b`  |  在元素**下方**弹出  | `ds-exp-br`  |
-| `ds-exp-l`  |  在元素**左方**弹出  | `ds-exp-br`  |
-| `ds-exp-r`  |  在元素**右方**弹出  | `ds-exp-br`  |
-| `ds-exp-h`  |     hover后弹出      |  `ds-exp-c`  |
-| `ds-exp-c`  |    左键单击后弹出    | 本身为缺省值 |
-| `ds-exp-d`  |    左键双击后弹出    |  `ds-exp-c`  |
+|    class    |                         描述                         |              缺省              |
+| :---------: | :--------------------------------------------------: | :----------------------------: |
+| `ds-exp-tl` |                 在指针**左上角**弹出                 |          `ds-exp-br`           |
+| `ds-exp-tr` |                 在指针**右上角**弹出                 |          `ds-exp-br`           |
+| `ds-exp-bl` |                 在指针**左下角**弹出                 |          `ds-exp-br`           |
+| `ds-exp-br` |                 在指针**右下角**弹出                 |          本身为缺省值          |
+| `ds-exp-t`  |                  在元素**上方**弹出                  |          `ds-exp-br`           |
+| `ds-exp-b`  |                  在元素**下方**弹出                  |          `ds-exp-br`           |
+| `ds-exp-l`  |                  在元素**左方**弹出                  |          `ds-exp-br`           |
+| `ds-exp-r`  |                  在元素**右方**弹出                  |          `ds-exp-br`           |
+| `ds-exp-h`  |                     hover后弹出                      |           `ds-exp-c`           |
+| `ds-exp-c`  |                    左键单击后弹出                    |          本身为缺省值          |
+| `ds-exp-d`  |                    左键双击后弹出                    |           `ds-exp-c`           |
+| `ds-nocls`  | 扩展框在用户点击其中元素后不关闭，必须点击页面才关闭 | 扩展框在用户点击其中元素后关闭 |
 
 ### 智能显示（TODO）
 
