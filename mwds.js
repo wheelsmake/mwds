@@ -272,7 +272,7 @@ function delStyle(d){
 
     //窗口提升
         //判断a在b上面还是下面+检测
-var tOrb = this.tOrb =(a,b)=>{
+function tOrb(a,b){
     let t = $.rect(a,"t");
     let o = $.rect(a,"b");
     let l = $.rect(a,"l");
