@@ -33,7 +33,6 @@ zIndexFallCount = 0;
 createMask();//弹出框/菜单遮罩创建
     //初始化注册通用事件
 iniGenEvents();
-
 //end初始化代码--------------------------------------------------------------------------------------------------------
 
 //公共函数/方法区
@@ -58,6 +57,11 @@ function checkWinPos(o){
 
     //todo:统一的关闭检查方案。在鼠标按下外部元素或按下内部元素且无ds-nocls时关闭元素。
 function checkClose(type, supportsNoCls){
+    
+}
+
+    //脱注册
+var unregister = this.unregister = (obj, deleteEle)=>{
     
 }
 //end公共函数/方法区
@@ -106,6 +110,9 @@ function deltaEvents(o,type){
                 pressedMenuItem = undefined;
             });
             break;
+        case "resize":
+            //todo:
+            break;
         case "exp-c":
             $.Events(o,"click",e=>{
 
@@ -122,12 +129,21 @@ function deltaEvents(o,type){
 
 //窗口
     //窗口注册
-var win = this.win = obj=>{
-    obj.addClass("ds-win");
-    if(obj.hasClass("ds-mov")) deltaEvents(obj,"mov");
-    if(obj.hasClass("ds-cls")){
-        deltaEvents(obj,"cls");
-        toolTip(obj,"双击空闲区域可关闭窗口","b",false);
+var win = this.win = (obj, isAbsolute, isTra, canMove, canClose, isOnTop, canResize, surePre)=>{
+    if(canMove) deltaEvents(obj, "mov");
+    if(canClose){
+        toolTip(obj, "双击空闲区域可关闭窗口", "b", false);
+        deltaEvents(obj, "cls");
+    }
+    if(canResize) deltaEvents(obj, "resize");
+    if(surePre != "pre"){
+        obj.addClass("ds-win");
+        if(isAbsolute) obj.addClass("ds-a");
+        if(isTra) obj.addClass("ds-tra");
+        if(canMove) obj.addClass("ds-mov");
+        if(canClose) obj.addClass("ds-cls");
+        if(isOnTop) obj.addClass("ds-ontop");
+        if(canResize) obj.addClass("ds-resize");
     }
     zIndex(obj);
 }
@@ -275,10 +291,8 @@ function zIndex(o){
     }
 }
     //end窗口提升
-//end窗口
 
-//可关闭的窗口
-    //双击关闭ds-cls
+    //可关闭的窗口
 function closeCls(isTouch, e){
     let t = e.target;
     if(!t.hasClass("ds-cls")) return;
@@ -297,36 +311,71 @@ function closeCls(isTouch, e){
         t.hide();
     }
 }
-//end可关闭的窗口
+    //end可关闭的窗口
+//end窗口
 
 //提示框
+    //提示框配置取决
+var ttDecider = this.ttDecider = o=>{
+    let di = "t";
+    let sh = false;
+    if(o.hasClass("ds-tt-t")) di = "t";
+    if(o.hasClass("ds-tt-b")) di = "b";
+    if(o.hasClass("ds-tt-l")) di = "l";
+    if(o.hasClass("ds-tt-r")) di = "r";
+    if(o.hasClass("ds-tt-t-t")){
+        di = "t";
+        sh = true;
+    }
+    if(o.hasClass("ds-tt-b-t")){
+        di = "b";
+        sh = true;
+    }
+    if(o.hasClass("ds-tt-l-t")){
+        di = "l";
+        sh = true;
+    }
+    if(o.hasClass("ds-tt-r-t")){
+        di = "r";
+        sh = true;
+    }
+    return{
+        direction: di,
+        showTip: sh
+    }
+}
+
     //提示框注册
-var toolTip = this.toolTip = (t,h,d,s)=>{
-    var e = document.createElement("div").addClass("ds-tt");
-    e.innerHTML = h;
-    switch(d){
+var toolTip = this.toolTip = (target, html, direction, showTip, surePre)=>{
+    var e;
+    if(surePre == "pre") e = html;
+    else{
+        e = document.createElement("div").addClass("ds-tt");
+        e.innerHTML = html;
+    }
+    switch(direction){
         case "t":
-            if(s) g("t-t");
+            if(showTip) g("t-t");
             else g("t");
             break;
         case "b":
-            if(s) g("b-t");
+            if(showTip) g("b-t");
             else g("b");
             break;
         case "l":
-            if(s) g("l-t");
+            if(showTip) g("l-t");
             else g("l");
             break;
         case "r":
-            if(s) g("r-t");
+            if(showTip) g("r-t");
             else g("r");
             break;
         default: $.E("direction");
     }
-    t.addClass("ds-tp");
-    if(t.css("height") == "auto" && t.css("width") == "auto") t.css("display","inline-block");
-    t.append(e);
-    deltaEvents(t,"tt");
+    target.addClass("ds-tp");
+    if(target.css("height") == "auto" && target.css("width") == "auto") target.css("display","inline-block");
+    target.append(e);
+    deltaEvents(target,"tt");
     function g(d){e.addClass(`ds-tt-${d}`).attr("data-tt-o",`ds-tt-${d}`);}
 }
 
@@ -574,4 +623,26 @@ var exp = this.exp = (tar, exp, d, tri, noPro)=>{
     function lst(c){alexp.addClass(`ds-exp-${c}`);}
 }
 //end扩展框
+
+//声明式注册
+    //声明式注册接口
+preRegister(win, toolTip, ttDecider, exp);
+function preRegister(win, tooltip, ttDecider, exp){
+    var doms = $("*[mwds]");
+    for(let i = 0; i < doms.length; i++){
+        let d = doms[i];
+        d.attr("mwds", null);
+        let tt = d.querySelector(".ds-tt");
+        let ep = d.querySelector(".ds-exp");
+        if(d.hasClass("ds-win")) win(d, d.hasClass("ds-a"), d.hasClass("ds-tra"), d.hasClass("ds-mov"), d.hasClass("ds-cls"), d.hasClass("ds-ontop"), d.hasClass("ds-resize"), "pre");
+        else if(tt){
+            let dec = ttDecider(tt);
+            toolTip(d, tt, dec.direction, dec.showTip, "pre");
+        }
+        else if(ep){
+            //todo:
+        }
+    }
+}
+//end声明式注册
 }

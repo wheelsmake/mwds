@@ -134,22 +134,25 @@ mwds.win([$("#mywin")], <isAbsolute>, <isTra>, <canMove>, <canClose>, <isOnTop>,
 
 ## 注册
 
+声明式注册时，请在提示框的父元素而不是提示框本身上添加`mwds`属性。
+
 ```javascript
-mwds.toolTip([$("#target-Element")], [tooltip html], [direction], <showTip>);
+mwds.toolTip([$("#target-Element")], [tooltip html], <direction>, <showTip>);
 ```
 
-|                  参数                  |       取值        |    class    |          描述          | 缺省 |
-| :------------------------------------: | :---------------: | :---------: | :--------------------: | :--: |
-|        `[$("#target-Element")]`        |       Node        |     无      | 要放置提示框的目标元素 | 必需 |
-|            `[tooltip html]`            | Node / HTML字符串 |     无      |    提示框元素或HTML    | 必需 |
-| `[direction]`（`<showtip>`不为`true`） |        `t`        |  `ds-tt-t`  | 在上方显示无尖端提示框 | `t`  |
-|                                        |        `b`        |  `ds-tt-b`  | 在下方显示无尖端提示框 |      |
-|                                        |        `l`        |  `ds-tt-l`  | 在左方显示无尖端提示框 |      |
-|                                        |        `r`        |  `ds-tt-r`  | 在右方显示无尖端提示框 |      |
-|  `[direction]`（`<showtip>`为`true`）  |        `t`        | `ds-tt-t-t` | 在上方显示有尖端提示框 | `t`  |
-|                                        |        `b`        | `ds-tt-b-t` | 在下方显示有尖端提示框 |      |
-|                                        |        `l`        | `ds-tt-l-t` | 在左方显示有尖端提示框 |      |
-|                                        |        `r`        | `ds-tt-r-t` | 在右方显示有尖端提示框 |      |
+|                  参数                  |       取值        |    class    |          描述          |  缺省  |
+| :------------------------------------: | :---------------: | :---------: | :--------------------: | :----: |
+|        `[$("#target-Element")]`        |       Node        |     无      | 要放置提示框的目标元素 |  必需  |
+|            `[tooltip html]`            | Node / HTML字符串 |     无      |    提示框元素或HTML    |  必需  |
+| `<direction>`（`<showtip>`不为`true`） |        `t`        |  `ds-tt-t`  | 在上方显示无尖端提示框 |  `t`   |
+|                                        |        `b`        |  `ds-tt-b`  | 在下方显示无尖端提示框 |        |
+|                                        |        `l`        |  `ds-tt-l`  | 在左方显示无尖端提示框 |        |
+|                                        |        `r`        |  `ds-tt-r`  | 在右方显示无尖端提示框 |        |
+|  `<direction>`（`<showtip>`为`true`）  |        `t`        | `ds-tt-t-t` | 在上方显示有尖端提示框 |  `t`   |
+|                                        |        `b`        | `ds-tt-b-t` | 在下方显示有尖端提示框 |        |
+|                                        |        `l`        | `ds-tt-l-t` | 在左方显示有尖端提示框 |        |
+|                                        |        `r`        | `ds-tt-r-t` | 在右方显示有尖端提示框 |        |
+|              `<showTip>`               |      Boolean      | `ds-tt-*-t` |    是否有三角形尖端    | 无尖端 |
 
 该方法返回注册成功的Node。
 
@@ -176,12 +179,13 @@ mwds.toolTip([$("#target-Element")], [tooltip html], [direction], <showTip>);
 
 1. mwds会在加载时自动创建覆盖层`#ds-overlay`，所有窗口都是这个覆盖层的子元素。
 2. 由于在面积小时很容易被关闭，弹出框**不适合**用于将一些信息展现给用户，而适合包含较多元素、占据较大屏幕面积的交互型界面，例如设置界面。可使用下文的通知框展现信息。
-3. 弹出框无声明式注册，但可以通过将元素声明在`#ds-overlay`中达到打开页面即弹窗的效果。
-4. 弹出框显示时会有动画，并且`#ds-overlay`将页面的其余部分调暗。用户点击页面上不属于弹出框的位置即可删除最上一个弹出框。弹出框拥有默认的样式。
-5. `#ds-overlay`无弹出框时的`z-index`为-1，有弹出框时的`z-index`为`999`。
-6. 支持多个窗口，但是没有自动调整窗口相对高度的功能（因为可能导致一些语义问题），需要保证**后显示的窗口不会把已有窗口挡住。**窗口居中，比较难以修改（因为使用了flex布局）。
+3. 弹出框显示时会有动画，并且`#ds-overlay`将页面的其余部分调暗。用户点击页面上不属于弹出框的位置即可删除最上一个弹出框。弹出框拥有默认的样式。
+4. `#ds-overlay`无弹出框时的`z-index`为-1，有弹出框时的`z-index`为`999`。
+5. 支持多个窗口，但是没有自动调整窗口相对高度的功能（因为可能导致一些语义问题），需要保证**后显示的窗口不会把已有窗口挡住。**窗口居中，比较难以修改（因为使用了flex布局）。
 
 ## 注册
+
+该功能不允许声明式注册，但可以通过将元素声明在`#ds-overlay`中达到打开页面即弹窗的效果。
 
 ```javascript
 var n = mwds.showPopUp([$("#element")]);
@@ -230,6 +234,8 @@ mwds.hidePopUp();
 - 由于历史遗留问题，菜单（menu）与下拉框（dropdown）在mwds中**为同一组件**，均表示在用户右键点击某个页面元素后在光标处弹出的元素。
 
 ## 注册
+
+该功能不允许声明式注册。
 
 ```javascript
 mwds.dropDown([$("#target")], [dropdown], <direction>, <noPropagation>);
@@ -303,6 +309,8 @@ mwds仅提供关闭所有菜单的方法调用，这**是刻意的设计**。若
 点击或hover一个元素后，这个元素临时展开一个扩展框。点击或hover页面的其余部分时，该扩展框自动收回。
 
 ## 注册（TODO）
+
+声明式注册时，请在提示框的父元素而不是提示框本身上添加`mwds`属性。
 
 ```javascript
 mwds.exp([$("#target-element"]), [expansion], <direction>, <trigger>, <noPropagation>, <noCls>);

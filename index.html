@@ -23,7 +23,7 @@
                 <li>我是第二个？？？？</li>
             </ul>
         </div>
-        <div id="first" class="ds-tra ds-mov ds-ontop" style="top: 400px;">
+        <div mwds id="first" class="ds-win ds-tra ds-mov ds-ontop" style="top: 400px;">
             <span>first - ON TOP!!!!!!!!!</span>
             <s>fsaj<span id="www">fiwaicfwaf</span>cwea</s><br />
             按下Alt+Shift可以无视所有元素一律拖动。<br />
@@ -33,26 +33,26 @@
             <span>加上span就可以了</span>
             <button onclick="mwds.showPopUp(this)">测试</button>
         </div>
-        <div id="second" class="ds-a ds-tra ds-mov" style="top: 200px;">
+        <div mwds id="second" class="ds-win ds-a ds-tra ds-mov" style="top: 200px;">
             <span>second</span>
             <s>fsajfiwaicfwafcwea</s><br />
             <p>我是一个块级元素p。我的右边也是我的领地，你不能在我右边拖动！ </p>
             <s>我是个<span id="tt4">行内</span>元素s，你可以在我右边拖动。</s><br />
             我是一个根text节点，所以我会被直接拖动，这很烦，不过也许适合用来做一些特殊的东西。
         </div>
-        <div id="third" style="left: 400px; top: 100px">
+        <div mwds id="third" class="ds-win" style="left: 400px; top: 100px">
             <span>thirdwindow</span><br />
             <span id="tt1">我不可以拖动。</span><br />
             <span>a</span><br />
             <div style="display:flex">测试</div>
             <i>fktest</i>
         </div>
-        <div id="fourth" class="ds-tra ds-cls ds-mov" style="left: 900px;">
+        <div mwds id="fourth" class="ds-win ds-tra ds-cls ds-mov" style="left: 900px;">
             <span>我是第四个</span><br />
             <span>fdssefsdfesd</span>
             <p id="tt3">一个p，我可以关闭！</p>
         </div>
-        <div id="fifth" class="ds-tra ds-cls ds-mov" style="left: 100px">
+        <div mwds id="fifth" class="ds-win ds-tra ds-cls ds-mov" style="left: 100px">
             <span>我是第五个</span><br />
             <span>fdssefsdfesd</span><br />
             <span>fdssefsdfesd</span><br />
@@ -64,13 +64,14 @@
             <p>一个p，我可以关闭！</p>
             我被视作一个空闲区域，可以关闭
         </div>
-        <div id="sixth" class="ds-cls ds-mov" style="left: 500px;top: 400px">
+        <div id="sixth" style="left: 500px;top: 400px">
             <span>我是第六个</span><br />
             <span>fdssefsdfesd</span>
             <p>一个p，我可以关闭！</p>
         </div>
-        <div id="tt2" style="position: absolute;left: 500px;top:200px;margin-top: 150px;margin-left: 20px;margin-right: 15px;margin-bottom: 30px;">
+        <div mwds id="tt2" style="position: absolute;left: 500px;top:200px;margin-top: 150px;margin-left: 20px;margin-right: 15px;margin-bottom: 30px;">
             mwds-tooltip：提示框以元素的border为对齐基线，1/2元素实际宽度为第二轴居中基线。
+            <div class="ds-tt ds-tt-l-t">assss今年</div>
         </div>
         <div id="expansion" style="position: absolute;left: 500px;top:600px;border: solid 2px #000;padding:20px 10px;border-radius: 6px;background-color: cornflowerblue;">
             点我打开扩展框
@@ -84,21 +85,16 @@
     <script src="../luery/luery.js"></script>
     <script src="mwds.js"></script>
     <script>
-        mwds.win($("#first"));
-        mwds.win($("#second"));
-        mwds.win($("#third"));
-        mwds.win($("#fourth"));
-        mwds.win($("#fifth"));
-        mwds.win($("#sixth"));
+        mwds.win($("#sixth"), false, false, true, true, false, false);
         //mwds.win测试通过
         mwds.dropDown($("#content"),$("#testddd"));
         mwds.dropDown($("#third"),$("#testdd"));
         //mwds.dropDown测试通过
         mwds.toolTip($("#tt1"),"ds-mov!!","b",true);
-        mwds.toolTip($("#tt2"),"assss今年","l",true);
+        //mwds.toolTip($("#tt2"),"assss今年","l",true);
         mwds.toolTip($("#tt3"),"双<span style='color:red'>击啊啊啊啊啊</span>啊啊啊啊啊啊啊啊啊啊啊啊啊啊","l",true);
         mwds.toolTip($("#tt4"),"专指代码的行内","r",false);
         mwds.exp($("#expansion"),$("#testexp"),"l","c");
     </script>
-    <!--script src="../dynamic/dynamic.js"></script-->
+    <script src="../dynamic/dynamic.js"></script>
 </html>
