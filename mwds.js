@@ -6,6 +6,8 @@ console.log("mwds.js - MoreWindows ©LJM12914\r\noink组件。 https://github.co
 
     //内部luery指代
 var $ = luery,
+    //已注册的组件列表
+components = [[],[]],
     //遮罩
 overlay = $("#ds-overlay"),
     //窗口移动flag
@@ -24,10 +26,12 @@ isToCloseExp = false,
 pressedExpItem,
     //窗口超限探测优化flag
 resizeTimer = null,
-    //窗口初次移动zIndex flag
-isToZIndex = false,
+    //窗口移动中zIndex周期
+zIndexInterval = false,
     //窗口z-index总体下降计数
 zIndexFallCount = 0;
+
+this.components = components;
 
     //遮罩层初始化
 createMask();//弹出框/菜单遮罩创建
@@ -55,14 +59,25 @@ function checkWinPos(o){
     if($.rect(o,"t") < 0)  o.css("top",0);
 }
 
-    //todo:统一的关闭检查方案。在鼠标按下外部元素或按下内部元素且无ds-nocls时关闭元素。
-function checkClose(type, supportsNoCls){
-    
-}
-
     //脱注册
+var allClasses = [
+    "win","a","tra","mov","cls","ontop","resize",
+    "tp","tt","tt-t","tt-b","tt-l","tt-r","tt-t-t","tt-b-t","tt-l-t","tt-r-t",
+    "dp","dd","dd-tl","dd-tr","dd-bl","dd-br","noCls",
+    "ep","exp","exp-tl","exp-tr","exp-bl","exp-br","exp-t","exp-b","exp-l","exp-r","exp-h","exp-c","exp-d",
+    "fixpos"];
 var unregister = this.unregister = (obj, deleteEle)=>{
-    
+    var isC = false;
+    for(let i = 0; i < components[0].length; i++){
+        if(obj == components[0][i]){
+            isC = true;
+            break;
+        }
+    }
+    if(!isC) $.E(`${obj} - This element should not be unregistered, or this element is not a component of mwds.`);
+    var newEle = obj.cloneNode(true);
+    for(let i = 0; i < allClasses.length; i++) newEle.removeClass(`ds-${allClasses[i]}`);
+    obj.replaceWith(newEle);
 }
 //end公共函数/方法区
 
@@ -145,6 +160,8 @@ var win = this.win = (obj, isAbsolute, isTra, canMove, canClose, isOnTop, canRes
         if(isOnTop) obj.addClass("ds-ontop");
         if(canResize) obj.addClass("ds-resize");
     }
+    components[0].push(obj);
+    components[1].push("win");
     zIndex(obj);
 }
     //end窗口注册
@@ -165,8 +182,7 @@ function pressOnWin(isTouch, e){
     move = e.target;
     if(move.hasClass("ds-mov")){//防止事件冒泡
         $("*").css({"cursor":"grabbing","user-select":"none","-webkit-user-drag":"none","-webkit-user-select":"none"});
-        isToZIndex = true;
-        //setZ(move, 51 + $(".ds-win").length);
+        zIndexInterval = setInterval(_=>{zIndex(move);},100);
         isMoving = true;
         var t = $.rect(move,"t"), l = $.rect(move,"l");
         if(isTouch){
@@ -183,10 +199,6 @@ function pressOnWin(isTouch, e){
         //移动中处理
 function moveWindows(isTouch, e){
     if(isMoving){
-        if(isToZIndex){
-            zIndex(move);
-            isToZIndex = false;
-        }
         if(isTouch){
             move.css("top",e.touches[0].pageY - deltaTop + "px");
             move.css("left",e.touches[0].pageX - deltaLeft + "px");
@@ -203,6 +215,7 @@ function moveWindows(isTouch, e){
 function moveUp(){
     if(isMoving){
         isMoving = false;
+        clearInterval(zIndexInterval);
         zIndex(move);
         delStyle($("html")[0]);
     }
@@ -255,9 +268,9 @@ function zIndex(o){
     var finalZ = getZ(o);
     for(let i = 0; i < pN.length; i++) finalZ = Math.max(getZ(pN[i]) + 1, finalZ);
     setZ(o,finalZ);
-    //累计到5才会真正执行一次，以免频繁清除空层造成的卡顿
-    if(zIndexFallCount > 5){
-        //console.log("fallZindex");
+    //累计到8才会真正执行一次，以免频繁清除空层造成的卡顿
+    if(zIndexFallCount > 8){
+        console.log("fallZindex");
         var cDs = {trees:[]}, checkedEle = [];
         //不需要对已经有树的元素重复一遍了，因为一棵树只要被发现就会被完全遍历
         for(let i = 0; i < w.length; i++) if(!checkedEle[i]) checkR(w[i], i, cDs.trees.length);
@@ -315,40 +328,42 @@ function closeCls(isTouch, e){
 //end窗口
 
 //提示框
-    //提示框配置取决
-var ttDecider = this.ttDecider = o=>{
+    //提示框样式取决方法
+var preTT = /*this.preTT =*/ (target, tt, toolTip)=>{
     let di = "t";
     let sh = false;
-    if(o.hasClass("ds-tt-t")) di = "t";
-    if(o.hasClass("ds-tt-b")) di = "b";
-    if(o.hasClass("ds-tt-l")) di = "l";
-    if(o.hasClass("ds-tt-r")) di = "r";
-    if(o.hasClass("ds-tt-t-t")){
+    let m = "ds-tt-";
+    //if(h("t")) di = "t"; //这是默认的，无需写
+    if(h("b")) di = "b";
+    if(h("l")) di = "l";
+    if(h("r")) di = "r";
+    if(h("t-t")){
         di = "t";
         sh = true;
     }
-    if(o.hasClass("ds-tt-b-t")){
+    if(h("b-t")){
         di = "b";
         sh = true;
     }
-    if(o.hasClass("ds-tt-l-t")){
+    if(h("l-t")){
         di = "l";
         sh = true;
     }
-    if(o.hasClass("ds-tt-r-t")){
+    if(h("r-t")){
         di = "r";
         sh = true;
     }
-    return{
-        direction: di,
-        showTip: sh
-    }
+    toolTip(target, tt, di, sh, "pre");
+    function h(o){return tt.hasClass(`ds-tt-${o}`);}
 }
 
     //提示框注册
 var toolTip = this.toolTip = (target, html, direction, showTip, surePre)=>{
     var e;
-    if(surePre == "pre") e = html;
+    if(surePre == "pre"){
+        e = html;
+        html.remove();
+    }
     else{
         e = document.createElement("div").addClass("ds-tt");
         e.innerHTML = html;
@@ -376,6 +391,8 @@ var toolTip = this.toolTip = (target, html, direction, showTip, surePre)=>{
     if(target.css("height") == "auto" && target.css("width") == "auto") target.css("display","inline-block");
     target.append(e);
     deltaEvents(target,"tt");
+    components[0].push(target);
+    components[1].push("tt");
     function g(d){e.addClass(`ds-tt-${d}`).attr("data-tt-o",`ds-tt-${d}`);}
 }
 
@@ -458,8 +475,8 @@ function createMask(){
 }
 
     //事件注册
-$("#ds-overlay").ontouchstart = $("#ds-overlay").onmousedown = e=>{isToClosePopUp = e.target.id == "ds-overlay"};
-$("#ds-overlay").ontouchend = $("#ds-overlay").onmouseup = e=>{
+overlay.ontouchstart = overlay.onmousedown = e=>{isToClosePopUp = e.target.id == "ds-overlay"};
+overlay.ontouchend = overlay.onmouseup = e=>{
     if(e.target.id == "ds-overlay" && isToClosePopUp && !e.button){//只有左键可以关闭了
         hidePopUp(overlay.children.length - 1);
         if(!overlay.children.length) hidePopUp();
@@ -489,33 +506,39 @@ var hidePopUp = this.hidePopUp = d=>{//传入序号！！！
 
 //菜单
     //绑定菜单
-var dropDown = this.dropDown = (er,ee,noPro)=>{
-    deltaEvents(ee,"dd");
-    $.Events(er,"contextmenu",e=>{
+var dropDown = this.dropDown = (target, dd, dire, noCls, noPro)=>{
+    dd.addClass("ds-dd");
+    target.addClass("ds-dp");
+    if(dire == "tl" || dire == "tr" || dire == "bl") dd.addClass(`ds-dd-${dire}`);
+    else dd.addClass("ds-dd-br");
+    if(noCls === true) dd.addClass("ds-nocls");
+    deltaEvents(dd,"dd");
+    $.Events(target,"contextmenu",e=>{
         let t, l;
-        //console.log(e.target,er);
-        if(noPro && checkDDProp(e.target)) return;
+        console.log(e.target);
+        if(noPro === true && !e.target.hasClass("ds-dp")) return;
         e.preventDefault();
-        ee.css("display","block");
+        dd.css("display","block");
         for(let i = 0; i < 12914; i++){//hack:反正绝对不可能超过10次，不管这里是多少了
-            if(ee.hasClass("ds-dd-bl")){
-                t = e.clientY + 8;
-                l = e.clientX - $.dom(ee,"bp--pb") - 8;
+            var delta = 10;
+            if(dire == "bl"){
+                t = e.clientY + delta;
+                l = e.clientX - $.dom(dd,"bp--pb") - delta;
             }
-            else if(ee.hasClass("ds-dd-tr")){
-                t = e.clientY - $.dom(ee,"bp||pb") - 8;
-                l = e.clientX + 8;
+            else if(dire == "tr"){
+                t = e.clientY - $.dom(dd,"bp||pb") - delta;
+                l = e.clientX + delta;
             }
-            else if(ee.hasClass("ds-dd-tl")){
-                t = e.clientY - $.dom(ee,"bp||pb") - 8;
-                l = e.clientX - $.dom(ee,"bp--pb") - 8;
+            else if(dire == "tl"){console.log(dire);
+                t = e.clientY - $.dom(dd,"bp||pb") - delta;
+                l = e.clientX - $.dom(dd,"bp--pb") - delta;
             }
             else{//ds-dd-br，默认
-                t = e.clientY + 8;
-                l = e.clientX + 8;
+                t = e.clientY + delta;
+                l = e.clientX + delta;
             }
             if(checkDropDownPos()){
-                ee.css({
+                dd.css({
                     top:t + "px",
                     left:l + "px"
                 });
@@ -523,26 +546,12 @@ var dropDown = this.dropDown = (er,ee,noPro)=>{
             }
         }
     });
-}
-
-    //检查菜单位置
-function checkDropDownPos(){
-    //todo:检查菜单位置
-    return true;
-}
-    
-    //todo:检查是否冒泡事件
-function checkDDProp(obj){
-    if(er.toString().indexOf("Collection") != -1){
-        //console.log("a");
-        for(let i = 0; i < er.length; i++) if(er[i] === obj) return false;
+    components[0].push(target);//主要是产生菜单的元素有事件，所以记录target
+    components[1].push("dd");
+        //todo:检查菜单位置
+    function checkDropDownPos(){
         return true;
     }
-    else if(er.toString().indexOf("Element") != -1){
-        if(er === obj) return false;
-        else return true;
-    }
-    $.E("?");
 }
 
     //关闭菜单
@@ -576,8 +585,25 @@ function checkCloseDropDown(e,isDown){
 //end菜单
 
 //扩展框
-var exp = this.exp = (tar, exp, d, tri, noPro)=>{
-    var alexp, isExistNode = exp instanceof Node,
+    //扩展框样式取决方法
+var preExp = /*this.preExp =*/ (target, expB, exp)=>{
+    let di = "br";
+    let tri = "c";
+    if(h("tl")) di = "tl";
+    if(h("tr")) di = "tr";
+    if(h("bl")) di = "bl";
+    //br是默认值，无需写
+    if(h("t")) di = "t";
+    if(h("b")) di = "b";
+    if(h("l")) di = "l";
+    if(h("r")) di = "r";
+    exp(target, expB, di, tri, expB.hasClass("ds-nocls"), expB.hasClass("ds-nopro"), "pre");
+    function h(o){return expB.hasClass(`ds-exp-${o}`);}
+}
+
+    //扩展框注册
+var exp = this.exp = (target, ep, direction, trigger, noCls, noPro, surePre)=>{
+    /*var alexp, isExistNode = exp instanceof Node,
     isNoStyle = (!isExistNode)?true:!(
         exp.hasClass("ds-exp-tl") || exp.hasClass("ds-exp-tr") ||
         exp.hasClass("ds-exp-bl") || exp.hasClass("ds-exp-br") ||
@@ -613,35 +639,47 @@ var exp = this.exp = (tar, exp, d, tri, noPro)=>{
     bindTriggerEvents();
     bindCloseExp();
     if(exp.isChildOf(tar)) exp.remove();//避免出现两个东西
+    //以上老代码，改为分离的声明式注册后少了很多这种判断class的逻辑
+    */
+    //todo:
+    
+    console.log("yes");
+    components[0].push(target);
+    components[1].push("exp");
     function bindTriggerEvents(){
-        if(alexp.hasClass("ds-exp-c")) deltaEvents(tar,"exp-c");
-        else if(alexp.hasClass("ds-exp-d")) deltaEvents(tar,"exp-d");
+        if(alexp.hasClass("ds-exp-c")) deltaEvents(target,"exp-c");
+        else if(alexp.hasClass("ds-exp-d")) deltaEvents(target,"exp-d");
     }
     function bindCloseExp(){
-
+        //???
     }
     function lst(c){alexp.addClass(`ds-exp-${c}`);}
 }
 //end扩展框
 
 //声明式注册
-    //声明式注册接口
-preRegister(win, toolTip, ttDecider, exp);
-function preRegister(win, tooltip, ttDecider, exp){
+preRegister(win, toolTip, preTT, exp, preExp);
+function preRegister(win, toolTip, preTT, exp, preExp){
     var doms = $("*[mwds]");
     for(let i = 0; i < doms.length; i++){
         let d = doms[i];
         d.attr("mwds", null);
-        let tt = d.querySelector(".ds-tt");
-        let ep = d.querySelector(".ds-exp");
+        //fixed:直接使用querySelector会导致内部元素有tooltip的元素的tooltip无法获取到
+        let tt, expBlock;
+        if(d.id == ""){
+            let id = (Math.random() * 1e8).toFixed(0);
+            d.id = id;
+            tt = d.querySelector(`#${id} > .ds-tt`);
+            expBlock = d.querySelector(`#${id} > .ds-exp`);
+            d.attr("id", null);
+        }
+        else{
+            tt = d.querySelector(`#${d.id} > .ds-tt`);
+            expBlock = d.querySelector(`#${d.id} > .ds-exp`);
+        }
         if(d.hasClass("ds-win")) win(d, d.hasClass("ds-a"), d.hasClass("ds-tra"), d.hasClass("ds-mov"), d.hasClass("ds-cls"), d.hasClass("ds-ontop"), d.hasClass("ds-resize"), "pre");
-        else if(tt){
-            let dec = ttDecider(tt);
-            toolTip(d, tt, dec.direction, dec.showTip, "pre");
-        }
-        else if(ep){
-            //todo:
-        }
+        else if(tt) preTT(d, tt, toolTip);
+        else if(expBlock) preExp(d, expBlock, exp);
     }
 }
 //end声明式注册

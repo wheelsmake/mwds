@@ -1,6 +1,6 @@
-# mwds（TODO：支持双重注册方案）
+# MoreWindows
 
-MoreWindows，一个oink的组件，提供了网页overlay层上的几乎一切功能：悬浮窗、菜单、弹出框、提示框、通知框……
+缩写mwds，一个oink的组件，提供了网页overlay层上的几乎一切功能：悬浮窗、菜单、弹出框、提示框、通知框……
 
 # 负一、丑话说在前头
 
@@ -56,7 +56,7 @@ mwds在创建实例时会自动进行一些初始化操作。之后使用`mwds`�
 
 node.js？不存在的！无服务器党不会考虑服务器端渲染的！
 
-## 注册与脱注册组件（TODO：脱注册）
+## 注册与脱注册组件
 
 mwds的组件注册方式有两种：**声明式注册**和**运行时注册**。
 
@@ -90,6 +90,9 @@ mwds.unregister([el], <deleteElement>);
 |      `[el]`       |       要脱注册的元素       |          必需          |
 | `<deleteElement>` | 是否从HTML文档中删除元素。 | 不从HTML文档中删除元素 |
 
+- **本方法会删除目标元素绑定的所有事件**，如果其绑定了自定义事件，请手动再次添加。
+- 本方法不会处理未经注册的元素并会抛出错误。
+
 若`<deleteElement>`为`true`，则该方法返回一个HTML DOM元素。若此项为`false`，则该方法返回一个Node。
 
 # 一、窗口（TODO：resize）
@@ -104,7 +107,7 @@ mwds.win([$("#mywin")], <isAbsolute>, <isTra>, <canMove>, <canClose>, <isOnTop>,
 
 |      参数       |  取值   |    class    |           描述            |           缺省           |
 | :-------------: | :-----: | :---------: | :-----------------------: | :----------------------: |
-| `[$("#mywin")]` |  Node   |     无      |         窗口元素          |           必需           |
+| `[$("#mywin")]` |  Node   |  `ds-win`   |         窗口元素          |           必需           |
 | `<isAbsolute>`  | Boolean |   `ds-a`    | 窗口位置行为：`absolute`  |  窗口位置行为：`fixed`   |
 |    `<isTra>`    | Boolean |  `ds-tra`   | 窗口背景透明，hover后变色 | 永远为某颜色（默认白色） |
 |   `<canMove>`   | Boolean |  `ds-mov`   |        窗口可移动         |       窗口不可移动       |
@@ -142,8 +145,8 @@ mwds.toolTip([$("#target-Element")], [tooltip html], <direction>, <showTip>);
 
 |                  参数                  |       取值        |    class    |          描述          |  缺省  |
 | :------------------------------------: | :---------------: | :---------: | :--------------------: | :----: |
-|        `[$("#target-Element")]`        |       Node        |     无      | 要放置提示框的目标元素 |  必需  |
-|            `[tooltip html]`            | Node / HTML字符串 |     无      |    提示框元素或HTML    |  必需  |
+|        `[$("#target-Element")]`        |       Node        |   `ds-tp`   | 要放置提示框的目标元素 |  必需  |
+|            `[tooltip html]`            | Node / HTML字符串 |   `ds-tt`   |    提示框元素或HTML    |  必需  |
 | `<direction>`（`<showtip>`不为`true`） |        `t`        |  `ds-tt-t`  | 在上方显示无尖端提示框 |  `t`   |
 |                                        |        `b`        |  `ds-tt-b`  | 在下方显示无尖端提示框 |        |
 |                                        |        `l`        |  `ds-tt-l`  | 在左方显示无尖端提示框 |        |
@@ -238,19 +241,19 @@ mwds.hidePopUp();
 该功能不允许声明式注册。
 
 ```javascript
-mwds.dropDown([$("#target")], [dropdown], <direction>, <noPropagation>);
+mwds.dropDown([$("#target")], [dropdown], <direction>, <noCls>, <noPropagation>);
 ```
 
-|       参数        |       取值        |   class    |               描述               |           缺省           |
-| :---------------: | :---------------: | :--------: | :------------------------------: | :----------------------: |
-| `[$("#target")]`  |       Node        |     无     |       要放置菜单的目标元素       |           必需           |
-|   `[dropdown]`    | Node / HTML字符串 |     无     |          菜单元素或HTML          |           必需           |
-|   `<direction>`   |       `tl`        | `ds-dd-tl` |     菜单在指针**左上角**弹出     |           `br`           |
-|                   |       `tr`        | `ds-dd-tr` |     菜单在指针**右上角**弹出     |                          |
-|                   |       `bl`        | `ds-dd-bl` |     菜单在指针**左下角**弹出     |                          |
-|                   |       `br`        | `ds-dd-br` |     菜单在指针**右下角**弹出     |                          |
-| `<noPropagation>` |      Boolean      |     无     |     是否禁用事件冒泡，见下文     |      不禁用事件冒泡      |
-|     `<noCls>`     |      Boolean      | `ds-nocls` | 是否禁用点击菜单内元素后关闭菜单 | 点击菜单内元素后关闭菜单 |
+|       参数        |       取值        |          class           |               描述               |           缺省           |
+| :---------------: | :---------------: | :----------------------: | :------------------------------: | :----------------------: |
+| `[$("#target")]`  |       Node        |         `ds-dp`          |       要放置菜单的目标元素       |           必需           |
+|   `[dropdown]`    | Node / HTML字符串 |         `ds-dd`          |          菜单元素或HTML          |           必需           |
+|   `<direction>`   |       `tl`        |        `ds-dd-tl`        |     菜单在指针**左上角**弹出     |           `br`           |
+|                   |       `tr`        |        `ds-dd-tr`        |     菜单在指针**右上角**弹出     |                          |
+|                   |       `bl`        |        `ds-dd-bl`        |     菜单在指针**左下角**弹出     |                          |
+|                   |       `br`        |        `ds-dd-br`        |     菜单在指针**右下角**弹出     |                          |
+|     `<noCls>`     |      Boolean      |        `ds-nocls`        | 是否禁用点击菜单内元素后关闭菜单 | 点击菜单内元素后关闭菜单 |
+| `<noPropagation>` |      Boolean      | 无，因为不允许声明式注册 |     是否禁用事件冒泡，见下文     |      不禁用事件冒泡      |
 
 mwds的菜单除了在光标右下角，还可以**默认**在光标其他三个角弹出，以增加一次展现的量。但是，一次在一个角只允许弹出一个菜单，传入多个在同一角弹出的菜单时，仅第一个会弹出。
 
@@ -312,14 +315,16 @@ mwds仅提供关闭所有菜单的方法调用，这**是刻意的设计**。若
 
 声明式注册时，请在提示框的父元素而不是提示框本身上添加`mwds`属性。
 
+- 声明式注册时
+
 ```javascript
-mwds.exp([$("#target-element"]), [expansion], <direction>, <trigger>, <noPropagation>, <noCls>);
+mwds.exp([$("#target-element"]), [expansion], <direction>, <trigger>, <noCls>, <noPropagation>);
 ```
 
 |           参数           |       取值        |    class    |                 描述                 |             缺省             |
 | :----------------------: | :---------------: | :---------: | :----------------------------------: | :--------------------------: |
-| `[$("#target-element")]` |       Node        |     无      |        要放置扩展框的目标元素        |             必需             |
-|      `[expansion]`       | Node / HTML字符串 |     无      |           扩展框元素或HTML           |             必需             |
+| `[$("#target-element")]` |       Node        |   `ds-ep`   |        要放置扩展框的目标元素        |             必需             |
+|      `[expansion]`       | Node / HTML字符串 |  `ds-exp`   |           扩展框元素或HTML           |             必需             |
 |      `<direction>`       |       `tl`        | `ds-exp-tl` |      扩展框在指针**左上角**弹出      |             `br`             |
 |                          |       `tr`        | `ds-exp-tr` |      扩展框在指针**右上角**弹出      |                              |
 |                          |       `bl`        | `ds-exp-bl` |      扩展框在指针**左下角**弹出      |                              |
@@ -331,8 +336,8 @@ mwds.exp([$("#target-element"]), [expansion], <direction>, <trigger>, <noPropaga
 |       `<trigger>`        |        `h`        | `ds-exp-h`  |          hover后弹出扩展框           |             `c`              |
 |                          |        `c`        | `ds-exp-c`  |         左键单击后弹出扩展框         |                              |
 |                          |        `d`        | `ds-exp-d`  |         左键双击后弹出扩展框         |                              |
-|    `<noPropagation>`     |      Boolean      |     无      |     是否禁用事件冒泡，与菜单相同     |        不禁用事件冒泡        |
-|        `<noCls>`         |      Boolean      |     无      | 是否禁用点击扩展框内元素后关闭扩展框 | 点击扩展框内元素后关闭扩展框 |
+|        `<noCls>`         |      Boolean      | `ds-nocls`  | 是否禁用点击扩展框内元素后关闭扩展框 | 点击扩展框内元素后关闭扩展框 |
+|    `<noPropagation>`     |      Boolean      | `ds-nopro`  |     是否禁用事件冒泡，与菜单相同     |        不禁用事件冒泡        |
 
 扩展框按展示位置分为两类：
 
@@ -375,11 +380,11 @@ HTML结构和提示框很像：
 mwds.fixpos([$("#fix-position")], [$("#win")], <hasWideTip>);
 ```
 
-|          参数          |  取值   | class |       描述       |    缺省    |
-| :--------------------: | :-----: | :---: | :--------------: | :--------: |
-| `[$("#fix-position")]` |  Node   |  无   |    固定栏元素    |    必需    |
-|     `[$("#win")]`      |  Node   |  无   | 被固定的窗口元素 |    必需    |
-|     `<hasWideTip>`     | Boolean |  无   |   是否广泛提示   | 不广泛提示 |
+|          参数          |  取值   |    class    |       描述       |    缺省    |
+| :--------------------: | :-----: | :---------: | :--------------: | :--------: |
+| `[$("#fix-position")]` |  Node   | `ds-fixpos` |    固定栏元素    |    必需    |
+|     `[$("#win")]`      |  Node   |     无      | 被固定的窗口元素 |    必需    |
+|     `<hasWideTip>`     | Boolean |     无      |   是否广泛提示   | 不广泛提示 |
 
 若`<hasWideTip>`不为`true`，则仅当鼠标指针进入固定栏区域时，会在固定栏内显示松开鼠标固定窗口的引导；若`<hasWideTip>`为`true`，则只要该窗口处于移动状态，就会在固定栏内显示松开鼠标固定窗口的引导。
 
