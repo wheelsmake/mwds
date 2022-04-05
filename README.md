@@ -58,6 +58,8 @@ node.js？不存在的！无服务器党不会考虑服务器端渲染的！
 
 ## 注册与脱注册组件
 
+### 注册
+
 mwds的组件注册方式有两种：**声明式注册**和**运行时注册**。
 
 声明式注册：
@@ -71,15 +73,13 @@ mwds的组件注册方式有两种：**声明式注册**和**运行时注册**�
 
 1. 使用`mwds.*()`方法完成注册，在注册时需要传入配置。
 
-- 运行时注册方法的第一个参数可以传入有效的HTML字符串或HTML DOM元素。下文代码示例中有的是传字符串，有的是传DOM，但是其实都可以。
+- 运行时注册方法的一些参数（当`取值`一栏为`Node / HTML字符串`时）可以传入有效的HTML字符串或HTML DOM元素。当传入的DOM元素已经被注册时，为了防止冲突，mwds会自动将元素脱注册，这意味着：
+  - 所有元素只能是mwds组件中的一种。不允许既是提示框，又是扩展框的此类情况。
+  - 不要在未知元素的情况下注册组件。
 
-不要传入已注册的元素或已带有相应class和事件绑定的元素。传入这些元素可能导致class属性配置丢失、事件处理冲突或其他的严重问题。推荐在不确定的情况下结合脱注册进行安全注册。
+### 脱注册
 
-```javascript
-mwds.exampleRegister(mwds.unregister($("#el"), true), [arguments]...);
-```
-
-需要脱注册时，请使用`mwds.unregister()`：
+需要手动脱注册时，请使用`mwds.unregister()`：
 
 ```javascript
 mwds.unregister([el], <deleteElement>);
@@ -90,10 +90,12 @@ mwds.unregister([el], <deleteElement>);
 |      `[el]`       |       要脱注册的元素       |          必需          |
 | `<deleteElement>` | 是否从HTML文档中删除元素。 | 不从HTML文档中删除元素 |
 
-- **本方法会删除目标元素绑定的所有事件**，如果其绑定了自定义事件，请手动再次添加。
+- 由于浏览器不允许分别删除处理器为直接的函数的事件，**本方法会删除目标元素绑定的所有事件**，如果其绑定了其他自定义事件，请手动再次添加。
 - 本方法不会处理未经注册的元素并会抛出错误。
 
-若`<deleteElement>`为`true`，则该方法返回一个HTML DOM元素。若此项为`false`，则该方法返回一个Node。
+若`<deleteElement>`为`true`，则该方法返回新的HTML DOM元素。若此项为`false`，则该方法返回新的Node。
+
+- 此外，`mwds.getComponents()`返回目前已注册的所有元素和它们的类型。
 
 # 一、窗口（TODO：resize）
 
@@ -139,6 +141,8 @@ mwds.win([$("#mywin")], <isAbsolute>, <isTra>, <canMove>, <canClose>, <isOnTop>,
 
 声明式注册时，请在提示框的父元素而不是提示框本身上添加`mwds`属性。
 
+声明式注册时请遵循下文HTML写法。
+
 ```javascript
 mwds.toolTip([$("#target-Element")], [tooltip html], <direction>, <showTip>);
 ```
@@ -176,7 +180,7 @@ mwds.toolTip([$("#target-Element")], [tooltip html], <direction>, <showTip>);
 
 不能在同一个元素中包含多个提示框。
 
-# 三、弹出框
+# 三、弹出框（TODO：正确的多窗口分别关闭逻辑）
 
 从屏幕中间弹出一个窗口，调暗屏幕的其余部分。
 
@@ -307,15 +311,15 @@ mwds仅提供关闭所有菜单的方法调用，这**是刻意的设计**。若
 
 如果mwds发现菜单的**纵**轴被浏览器的边界截断，就会将菜单移至光标的其他角以使其完全显示；如果这样做也不行，那么会将菜单缩短，使其带滚轮地完全显示。
 
-# 五、扩展框（DOING）
+# 五、扩展框
 
 点击或hover一个元素后，这个元素临时展开一个扩展框。点击或hover页面的其余部分时，该扩展框自动收回。
 
-## 注册（TODO）
+## 注册（DOING）
 
 声明式注册时，请在提示框的父元素而不是提示框本身上添加`mwds`属性。
 
-- 声明式注册时
+声明式注册时请遵循下文HTML写法。
 
 ```javascript
 mwds.exp([$("#target-element"]), [expansion], <direction>, <trigger>, <noCls>, <noPropagation>);

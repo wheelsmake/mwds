@@ -31,8 +31,6 @@ zIndexInterval = false,
     //窗口z-index总体下降计数
 zIndexFallCount = 0;
 
-this.components = components;
-
     //遮罩层初始化
 createMask();//弹出框/菜单遮罩创建
     //初始化注册通用事件
@@ -40,6 +38,9 @@ iniGenEvents();
 //end初始化代码--------------------------------------------------------------------------------------------------------
 
 //公共函数/方法区
+    //供外部获取components数组但不允许修改
+/*var getComponents =*/ this.getComponents = _=>{return components;}
+
     //快速获取z-index
 function getZ(o){return parseInt(o.style.zIndex) || 50;}
 
@@ -77,7 +78,22 @@ var unregister = this.unregister = (obj, deleteEle)=>{
     if(!isC) $.E(`${obj} - This element should not be unregistered, or this element is not a component of mwds.`);
     var newEle = obj.cloneNode(true);
     for(let i = 0; i < allClasses.length; i++) newEle.removeClass(`ds-${allClasses[i]}`);
-    obj.replaceWith(newEle);
+    if(deleteEle === true) obj.remove();
+    else obj.replaceWith(newEle);
+    return(newEle);
+}
+
+    //分离Node与HTML字符串
+function toHTML(o, p, surePre){//todo:
+    if(surePre || o instanceof Node){
+        for(let i = 0; i < components[0].length; i++) if(o == components[0][i]) return unregister(o);
+        return o;
+    }
+    else{
+        var a = document.createElement("div");
+        a.innerHTML = o;
+        return a;
+    }
 }
 //end公共函数/方法区
 
@@ -358,16 +374,9 @@ var preTT = /*this.preTT =*/ (target, tt, toolTip)=>{
 }
 
     //提示框注册
-var toolTip = this.toolTip = (target, html, direction, showTip, surePre)=>{
+var toolTip = this.toolTip = (target, ttB, direction, showTip, surePre)=>{
     var e;
-    if(surePre == "pre"){
-        e = html;
-        html.remove();
-    }
-    else{
-        e = document.createElement("div").addClass("ds-tt");
-        e.innerHTML = html;
-    }
+    e = toHTML(ttB, target);//todo:
     switch(direction){
         case "t":
             if(showTip) g("t-t");
@@ -392,6 +401,8 @@ var toolTip = this.toolTip = (target, html, direction, showTip, surePre)=>{
     target.append(e);
     deltaEvents(target,"tt");
     components[0].push(target);
+    components[1].push("tp");
+    components[0].push(ttB);
     components[1].push("tt");
     function g(d){e.addClass(`ds-tt-${d}`).attr("data-tt-o",`ds-tt-${d}`);}
 }
@@ -492,6 +503,7 @@ var showPopUp = this.showPopUp = d=>{
 
     //隐藏
 var hidePopUp = this.hidePopUp = d=>{//传入序号！！！
+    //todo:支持多方案关闭
     const A = Array.from(overlay.children);
     if(d === undefined){
         overlay.innerHTML = "";
@@ -547,6 +559,8 @@ var dropDown = this.dropDown = (target, dd, dire, noCls, noPro)=>{
         }
     });
     components[0].push(target);//主要是产生菜单的元素有事件，所以记录target
+    components[1].push("dp");
+    components[0].push(dd);
     components[1].push("dd");
         //todo:检查菜单位置
     function checkDropDownPos(){
@@ -602,7 +616,7 @@ var preExp = /*this.preExp =*/ (target, expB, exp)=>{
 }
 
     //扩展框注册
-var exp = this.exp = (target, ep, direction, trigger, noCls, noPro, surePre)=>{
+var exp = this.exp = (target, expB, direction, trigger, noCls, noPro, surePre)=>{
     /*var alexp, isExistNode = exp instanceof Node,
     isNoStyle = (!isExistNode)?true:!(
         exp.hasClass("ds-exp-tl") || exp.hasClass("ds-exp-tr") ||
@@ -643,8 +657,9 @@ var exp = this.exp = (target, ep, direction, trigger, noCls, noPro, surePre)=>{
     */
     //todo:
     
-    console.log("yes");
     components[0].push(target);
+    components[1].push("ep");
+    components[0].push(expB);
     components[1].push("exp");
     function bindTriggerEvents(){
         if(alexp.hasClass("ds-exp-c")) deltaEvents(target,"exp-c");
