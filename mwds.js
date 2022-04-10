@@ -64,9 +64,11 @@ function checkWinPos(o){
 var allClasses = [
     "win","a","tra","mov","cls","ontop","resize",
     "tp","tt","tt-t","tt-b","tt-l","tt-r","tt-t-t","tt-b-t","tt-l-t","tt-r-t",
-    "dp","dd","dd-tl","dd-tr","dd-bl","dd-br","noCls",
+    "dp","dd","dd-tl","dd-tr","dd-bl","dd-br",
     "ep","exp","exp-tl","exp-tr","exp-bl","exp-br","exp-t","exp-b","exp-l","exp-r","exp-h","exp-c","exp-d",
-    "fixpos"];
+    "fixpos",
+    "nocls"
+];
 var unregister = this.unregister = (obj, deleteEle)=>{
     var isC = false;
     for(let i = 0; i < components[0].length; i++){
@@ -78,15 +80,34 @@ var unregister = this.unregister = (obj, deleteEle)=>{
     if(!isC) $.E(`${obj} - This element should not be unregistered, or this element is not a component of mwds.`);
     var newEle = obj.cloneNode(true);
     for(let i = 0; i < allClasses.length; i++) newEle.removeClass(`ds-${allClasses[i]}`);
+    if(newEle.attr("class") == "") newEle.attr("class", null);
     if(deleteEle === true) obj.remove();
     else obj.replaceWith(newEle);
     return(newEle);
 }
 
     //分离Node与HTML字符串
-function toHTML(o, p, surePre){//todo:
-    if(surePre || o instanceof Node){
-        for(let i = 0; i < components[0].length; i++) if(o == components[0][i]) return unregister(o);
+    //一律返回一个未进入HTML文档的Node。
+    //如果是预注册，那么一定是DOM元素并且已有class，不需要脱注册
+    //如果不是预注册并是DOM元素，那么需要检查是否已注册或是否在原本元素内
+    //如果是HTML字符串，那么新建元素
+var toHTML = this.toHTML = (o, p, type, surePre)=>{
+    //console.log(o,p,type,surePre);
+    if(surePre == "pre"){
+        var c = o.cloneNode(o, true);
+        o.remove();
+        return c;
+    }
+    else if(o instanceof Node){
+        for(let i = 0; i < components[0].length; i++){
+            //fixed:必须要类型相同才行，不要把可关闭窗口直接脱注册了
+            if(o == components[0][i] && type == components[1][i]) return unregister(o, true);
+        }
+        if(o.isChildOf(p)){
+            var c = o.cloneNode(o, true);
+            o.remove();
+            return c;
+        }
         return o;
     }
     else{
@@ -369,32 +390,24 @@ var preTT = /*this.preTT =*/ (target, tt, toolTip)=>{
         di = "r";
         sh = true;
     }
+    //console.log(target,tt,di,sh);
     toolTip(target, tt, di, sh, "pre");
     function h(o){return tt.hasClass(`ds-tt-${o}`);}
 }
 
     //提示框注册
 var toolTip = this.toolTip = (target, ttB, direction, showTip, surePre)=>{
-    var e;
-    e = toHTML(ttB, target);//todo:
-    switch(direction){
-        case "t":
-            if(showTip) g("t-t");
-            else g("t");
-            break;
-        case "b":
-            if(showTip) g("b-t");
-            else g("b");
-            break;
-        case "l":
-            if(showTip) g("l-t");
-            else g("l");
-            break;
-        case "r":
-            if(showTip) g("r-t");
-            else g("r");
-            break;
-        default: $.E("direction");
+    var e = toHTML(ttB, target, "tt", surePre);
+    //console.log(e);
+    e.addClass("ds-tt");
+    //这里还包括了设置data属性，pre也不能去掉
+    if(direction == "b" || direction == "l" || direction == "r"){
+        if(showTip) g(`${direction}-t`);
+        else g(direction);
+    }
+    else{//t
+        if(showTip) g("t-t");
+        else g("t");
     }
     target.addClass("ds-tp");
     if(target.css("height") == "auto" && target.css("width") == "auto") target.css("display","inline-block");
@@ -655,20 +668,27 @@ var exp = this.exp = (target, expB, direction, trigger, noCls, noPro, surePre)=>
     if(exp.isChildOf(tar)) exp.remove();//避免出现两个东西
     //以上老代码，改为分离的声明式注册后少了很多这种判断class的逻辑
     */
-    //todo:
+    //console.log(target, expB);
+    var e = toHTML(expB, target, "exp", surePre);
+    e.addClass("ds-exp");
+    if(direction == "t"  || direction == "b"  || direction == "l" || direction == "r" ||
+       direction == "tl" || direction == "tr" || direction == "bl") g(direction);
+    else g("br");
+    //console.log(e);
     
     components[0].push(target);
     components[1].push("ep");
     components[0].push(expB);
     components[1].push("exp");
-    function bindTriggerEvents(){
+    function g(d){e.addClass(`ds-exp-${d}`).attr("data-exp-o", `ds-exp-${d}`);}
+    /*function bindTriggerEvents(){
         if(alexp.hasClass("ds-exp-c")) deltaEvents(target,"exp-c");
         else if(alexp.hasClass("ds-exp-d")) deltaEvents(target,"exp-d");
     }
     function bindCloseExp(){
         //???
     }
-    function lst(c){alexp.addClass(`ds-exp-${c}`);}
+    function lst(c){alexp.addClass(`ds-exp-${c}`);}*/
 }
 //end扩展框
 
@@ -679,8 +699,8 @@ function preRegister(win, toolTip, preTT, exp, preExp){
     for(let i = 0; i < doms.length; i++){
         let d = doms[i];
         d.attr("mwds", null);
-        //fixed:直接使用querySelector会导致内部元素有tooltip的元素的tooltip无法获取到
         let tt, expBlock;
+        //fixed:直接使用querySelector会导致内部元素有tooltip的元素的tooltip无法获取到
         if(d.id == ""){
             let id = (Math.random() * 1e8).toFixed(0);
             d.id = id;
