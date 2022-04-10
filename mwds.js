@@ -152,6 +152,7 @@ function deltaEvents(o,type){
             $.Events(o,"touchstart",e=>{closeCls(true,e);});
             break;
         case "tt":
+            //console.log(o);
             $.Events(o,"mouseover",e=>{alignToolTip(e.target);});
             $.Events(o,"touchstart",e=>{alignToolTip(e.target);});
             break;
@@ -167,12 +168,12 @@ function deltaEvents(o,type){
             break;
         case "exp-c":
             $.Events(o,"click",e=>{
-
+                console.log("click");
             });
             break;
         case "exp-d":
             $.Events(o,"dblclick",e=>{
-
+                console.log("dblclick");
             })
         default: $.E();
     }
@@ -210,7 +211,7 @@ function checkWinPress(isTouch, e){
     if(t.isInClass("ds-win")){
         if(isTouch) e.preventDefault();//必须这样
         e.stopPropagation();
-        zIndex(t.getParentByClass("ds-win"));
+        zIndex(t.getParentByClass("ds-win") || t);
     }
 }
 
@@ -307,7 +308,7 @@ function zIndex(o){
     setZ(o,finalZ);
     //累计到8才会真正执行一次，以免频繁清除空层造成的卡顿
     if(zIndexFallCount > 8){
-        console.log("fallZindex");
+        //console.log("fallZindex");
         var cDs = {trees:[]}, checkedEle = [];
         //不需要对已经有树的元素重复一遍了，因为一棵树只要被发现就会被完全遍历
         for(let i = 0; i < w.length; i++) if(!checkedEle[i]) checkR(w[i], i, cDs.trees.length);
@@ -369,7 +370,6 @@ function closeCls(isTouch, e){
 var preTT = /*this.preTT =*/ (target, tt, toolTip)=>{
     let di = "t";
     let sh = false;
-    let m = "ds-tt-";
     //if(h("t")) di = "t"; //这是默认的，无需写
     if(h("b")) di = "b";
     if(h("l")) di = "l";
@@ -390,7 +390,6 @@ var preTT = /*this.preTT =*/ (target, tt, toolTip)=>{
         di = "r";
         sh = true;
     }
-    //console.log(target,tt,di,sh);
     toolTip(target, tt, di, sh, "pre");
     function h(o){return tt.hasClass(`ds-tt-${o}`);}
 }
@@ -410,7 +409,8 @@ var toolTip = this.toolTip = (target, ttB, direction, showTip, surePre)=>{
         else g("t");
     }
     target.addClass("ds-tp");
-    if(target.css("height") == "auto" && target.css("width") == "auto") target.css("display","inline-block");
+    //console.log(target);
+    if(target.css("height") == "auto" && target.css("width") == "auto"/* && target.css("display") != "block"*/) target.css("display","inline-block");
     target.append(e);
     deltaEvents(target,"tt");
     components[0].push(target);
@@ -427,9 +427,9 @@ function alignToolTip(tp,isFixed){
     //tp.addClass(""); //todo:tooltip双向动画
     //fixed:直接使用querySelector会导致内部元素有tooltip的元素的tooltip无法获取到
     if(tp.id == ""){
-        var i = (Math.random() * 1e8).toFixed(0);
+        var i = `mwds${(Math.random() * 1e8).toFixed(0)}`;
         tp.id = i;
-        var t = tp.querySelector(`#${i} > .ds-tt`);
+        var t = tp.querySelector(`#${tp.id} > .ds-tt`);
         tp.attr("id",null);
     }
     else var t = tp.querySelector(`#${tp.id} > .ds-tt`);
@@ -476,7 +476,7 @@ function alignToolTip(tp,isFixed){
     }
     function fixToolTip(a){
         //fixed:.ds-cls提示框偶然抽风失灵
-        console.log(tp,t);
+        //console.log(tp,t);
         rAC();
         if(hasTriangle()) t.addClass("ds-tt-" + a + "-t");
         else t.addClass("ds-tt-" + a);
@@ -540,7 +540,7 @@ var dropDown = this.dropDown = (target, dd, dire, noCls, noPro)=>{
     deltaEvents(dd,"dd");
     $.Events(target,"contextmenu",e=>{
         let t, l;
-        console.log(e.target);
+        //console.log(e.target);
         if(noPro === true && !e.target.hasClass("ds-dp")) return;
         e.preventDefault();
         dd.css("display","block");
@@ -554,7 +554,7 @@ var dropDown = this.dropDown = (target, dd, dire, noCls, noPro)=>{
                 t = e.clientY - $.dom(dd,"bp||pb") - delta;
                 l = e.clientX + delta;
             }
-            else if(dire == "tl"){console.log(dire);
+            else if(dire == "tl"){
                 t = e.clientY - $.dom(dd,"bp||pb") - delta;
                 l = e.clientX - $.dom(dd,"bp--pb") - delta;
             }
@@ -624,50 +624,16 @@ var preExp = /*this.preExp =*/ (target, expB, exp)=>{
     if(h("b")) di = "b";
     if(h("l")) di = "l";
     if(h("r")) di = "r";
+    //触发条件
+    if(h("h")) tri = "h";
+    if(h("d")) tri = "d";
+    //c是默认值
     exp(target, expB, di, tri, expB.hasClass("ds-nocls"), expB.hasClass("ds-nopro"), "pre");
     function h(o){return expB.hasClass(`ds-exp-${o}`);}
 }
 
     //扩展框注册
 var exp = this.exp = (target, expB, direction, trigger, noCls, noPro, surePre)=>{
-    /*var alexp, isExistNode = exp instanceof Node,
-    isNoStyle = (!isExistNode)?true:!(
-        exp.hasClass("ds-exp-tl") || exp.hasClass("ds-exp-tr") ||
-        exp.hasClass("ds-exp-bl") || exp.hasClass("ds-exp-br") ||
-        exp.hasClass("ds-exp-t")  || exp.hasClass("ds-exp-b")  ||
-        exp.hasClass("ds-exp-l")  || exp.hasClass("ds-exp-r")  ),
-    isNoTrigger = (!isExistNode)?true:!(exp.hasClass("ds-exp-h") || exp.hasClass("ds-exp-c") || exp.hasClass("ds-exp-d")),
-    isValidStyle = (d == "tl" || d == "tr" || d == "bl" || d == "br" || d == "t" || d == "b" || d == "l" || d == "r"),
-    isValidTrigger = (tri == "h" || tri == "c" || tri == "d");
-    //获取操作对象
-    if(isExistNode) alexp = exp.cloneNode(true);//note:这边不用考虑exp不在tar内部最末尾的问题
-    else{
-        alexp = document.createElement("div").addClass("ds-exp");
-        alexp.innerHTML = exp;
-    }
-    //end获取操作对象
-    //添加配置或选择默认配置
-    //console.log(isExistNode,isNoStyle,isNoTrigger,isValidStyle,isValidTrigger);
-    if(isValidStyle){
-        if(!isNoStyle) alexp.removeClass("ds-exp-tl").removeClass("ds-exp-tr").removeClass("ds-exp-bl").removeClass("ds-exp-br").removeClass("ds-exp-t").removeClass("ds-exp-b").removeClass("ds-exp-l").removeClass("ds-exp-r");
-        lst(d);
-    }
-    else if(isNoStyle) $.E("style");
-    if(isValidTrigger){
-        if(!isNoTrigger) alexp.removeClass("ds-exp-h").removeClass("ds-exp-c").removeClass("ds-exp-d");
-        lst(tri);
-    }
-    else if(isNoTrigger) $.E("trigger");
-    //end添加配置或选择默认配置
-    //最终处理
-    alexp.addClass("ds-exp");
-    tar.addClass("ds-ep");
-    tar.append(alexp);
-    bindTriggerEvents();
-    bindCloseExp();
-    if(exp.isChildOf(tar)) exp.remove();//避免出现两个东西
-    //以上老代码，改为分离的声明式注册后少了很多这种判断class的逻辑
-    */
     //console.log(target, expB);
     var e = toHTML(expB, target, "exp", surePre);
     e.addClass("ds-exp");
@@ -675,7 +641,18 @@ var exp = this.exp = (target, expB, direction, trigger, noCls, noPro, surePre)=>
        direction == "tl" || direction == "tr" || direction == "bl") g(direction);
     else g("br");
     //console.log(e);
-    
+    target.addClass("ds-ep");
+    if(target.css("height") == "auto" && target.css("width") == "auto") target.css("display","inline-block");
+    target.append(e);
+    if(trigger == "c"){
+        e.addClass("ds-exp-c");
+        deltaEvents(target, "exp-c");
+    }
+    else if(trigger == "d"){
+        e.addClass("ds-exp-d");
+        deltaEvents(target, "exp-d");
+    }
+    else e.addClass("ds-exp-h");
     components[0].push(target);
     components[1].push("ep");
     components[0].push(expB);
@@ -695,26 +672,39 @@ var exp = this.exp = (target, expB, direction, trigger, noCls, noPro, surePre)=>
 //声明式注册
 preRegister(win, toolTip, preTT, exp, preExp);
 function preRegister(win, toolTip, preTT, exp, preExp){
-    var doms = $("*[mwds]");
-    for(let i = 0; i < doms.length; i++){
-        let d = doms[i];
-        d.attr("mwds", null);
+    while(true){
+        var doms = $("*[mwds]");
+        if(!doms.length) break;
+        for(let i = 0; i < doms.length; i++){
+            if(doms[i].attr("mwds") === null) continue;//不能改doms，就跳过
+            //doms[i].attr("mwds", null);
+            //fixed:先找找当前元素内有没有嵌套着mwds的元素
+            //for(let j = 0; j < doms.length; j++) if(doms[j].isInElement(doms[i])) checkMWDS(doms[j]);
+            checkMWDS(doms[i]);
+        }
+    }
+    //fixed:如果被toHTML的元素带有mwds属性，那么就会删不掉
+    //fixed:再次出现了![]=false的问题。
+    if($("*[mwds]").length != 0) $("*[mwds]").attr("mwds", null);
+    function checkMWDS(obj){
+        obj.attr("mwds", null);
         let tt, expBlock;
         //fixed:直接使用querySelector会导致内部元素有tooltip的元素的tooltip无法获取到
-        if(d.id == ""){
-            let id = (Math.random() * 1e8).toFixed(0);
-            d.id = id;
-            tt = d.querySelector(`#${id} > .ds-tt`);
-            expBlock = d.querySelector(`#${id} > .ds-exp`);
-            d.attr("id", null);
+        if(obj.id == ""){
+            let id = `mwds${(Math.random() * 1e5).toFixed(0)}`;
+            obj.id = id;
+            tt = obj.querySelector(`#${obj.id} > .ds-tt`);
+            expBlock = obj.querySelector(`#${obj.id} > .ds-exp`);
+            obj.attr("id",null);
         }
         else{
-            tt = d.querySelector(`#${d.id} > .ds-tt`);
-            expBlock = d.querySelector(`#${d.id} > .ds-exp`);
+            tt = obj.querySelector(`#${obj.id} > .ds-tt`);
+            expBlock = obj.querySelector(`#${obj.id} > .ds-exp`);
         }
-        if(d.hasClass("ds-win")) win(d, d.hasClass("ds-a"), d.hasClass("ds-tra"), d.hasClass("ds-mov"), d.hasClass("ds-cls"), d.hasClass("ds-ontop"), d.hasClass("ds-resize"), "pre");
-        else if(tt) preTT(d, tt, toolTip);
-        else if(expBlock) preExp(d, expBlock, exp);
+        //console.log(tt,expBlock);
+        if(obj.hasClass("ds-win")) win(obj, obj.hasClass("ds-a"), obj.hasClass("ds-tra"), obj.hasClass("ds-mov"), obj.hasClass("ds-cls"), obj.hasClass("ds-ontop"), obj.hasClass("ds-resize"), "pre");
+        else if(tt) preTT(obj, tt, toolTip);
+        else if(expBlock) preExp(obj, expBlock, exp);
     }
 }
 //end声明式注册

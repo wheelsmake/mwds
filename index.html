@@ -79,7 +79,15 @@
         </div>
         <div mwds id="expansion" style="position: absolute;left: 500px;top:600px;border: solid 2px #000;padding:20px 10px;border-radius: 6px;background-color: cornflowerblue;">
             点我打开扩展框
-            <div id="testexp" class="ds-exp ds-exp-h ds-exp-br">啦啦啦啦啦啦啦啦啦啦啦啦啦<div style="height:10px;width:400px"></div>啦啦<br />啦啦啦啦啦<br />啦啦啦啦啦<br />啦啦啦啦啦<br /></div>
+            <div id="testexp" class="ds-exp ds-exp-h ds-exp-br">啦啦啦
+                <div mwds>
+                    发的水水水水水水水水水水水测试嵌套声明式注册
+                    <div class="ds-tt ds-tt-r-t">难死了</div>
+                </div>
+                asdsdadsasdasda
+                <div style="height:10px;width:400px">啦啦啦啦啦啦啦啦啦啦</div>
+                啦啦<br />啦啦啦啦啦<br />啦啦啦啦啦<br />啦啦啦啦啦<br />
+            </div>
         </div>
         <div draggable="true" style="position: absolute;left: 600px;top:200px">asssssssaassa</div>
         <div id="content" contenteditable="true">
@@ -94,7 +102,7 @@
         mwds.dropDown($("#content"),$("#testddd"),"tl",true);
         mwds.dropDown($("#third"),$("#testdd"),undefined,undefined,true);
         //mwds.dropDown测试通过
-        mwds.toolTip($("#tt1"),"ds-mov!!","b",true);
+        //mwds.toolTip($("#tt1"),"ds-mov!!","b",true);
         //mwds.toolTip($("#tt2"),"assss今年","l",true);
         //mwds.toolTip测试通过
         //mwds.exp($("#expansion"),$("#testexp"),"l","c");

@@ -153,10 +153,18 @@ html{font-size: 16px;}
     /*display不可更改*/
     display: block;
 }
-.ds-tt-t,.ds-tt-t-t{bottom: calc(100% + .5rem);}
-.ds-tt-b,.ds-tt-b-t{top: calc(100% + .5rem);}
-.ds-tt-l,.ds-tt-l-t{right: calc(100% + .8rem);}
-.ds-tt-r,.ds-tt-r-t{left: calc(100% + .8rem);}
+.ds-tt-t,.ds-tt-t-t{
+    bottom: calc(100% + .5rem);
+}
+.ds-tt-b,.ds-tt-b-t{
+    top: calc(100% + .5rem);
+}
+.ds-tt-l,.ds-tt-l-t{
+    right: calc(100% + .8rem);
+}
+.ds-tt-r,.ds-tt-r-t{
+    left: calc(100% + .8rem);
+}
 .ds-tt-t-t::after,.ds-tt-b-t::after,.ds-tt-l-t::after,.ds-tt-r-t::after{
     position: inherit;
     content: "";
