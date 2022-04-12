@@ -1,4 +1,4 @@
-# MoreWindows
+# MoreWindows（TODO:统一关闭逻辑）
 
 缩写mwds，一个oink的组件，提供了网页overlay层上的几乎一切功能：悬浮窗、菜单、弹出框、提示框、通知框……
 
@@ -185,7 +185,7 @@ mwds.toolTip([$("#target-Element")], [tooltip html], <direction>, <showTip>);
 1. mwds会在加载时自动创建覆盖层`#ds-overlay`，所有窗口都是这个覆盖层的子元素。
 2. 由于在面积小时很容易被关闭，弹出框**不适合**用于将一些信息展现给用户，而适合包含较多元素、占据较大屏幕面积的交互型界面，例如设置界面。可使用下文的通知框展现信息。
 3. 弹出框显示时会有动画，并且`#ds-overlay`将页面的其余部分调暗。用户点击页面上不属于弹出框的位置即可删除最上一个弹出框。弹出框拥有默认的样式。
-4. `#ds-overlay`无弹出框时的`z-index`为-1，有弹出框时的`z-index`为`999`。
+4. `#ds-overlay`无弹出框时的`z-index`为`-1`，有弹出框时的`z-index`为`999`。
 5. 支持多个窗口，但是没有自动调整窗口相对高度的功能（因为可能导致一些语义问题），需要保证**后显示的窗口不会把已有窗口挡住。**窗口居中，比较难以修改（因为使用了flex布局）。
 
 ## 注册
@@ -202,7 +202,7 @@ var n = mwds.showPopUp([$("#element")]);
 
 该方法会返回该弹出框在`$("#ds-overlay").children`中的下标序号，可用于删除该弹出框。
 
-## 关闭（TODO：支持多方案关闭）
+## 关闭
 
 将下标序号传入`hidePopUp()`方法：
 
@@ -210,7 +210,7 @@ var n = mwds.showPopUp([$("#element")]);
 mwds.hidePopUp(12914);
 ```
 
-或者传入需要删除的弹出框元素：
+或者传入需要关闭的弹出框元素：
 
 ```javascript
 mwds.hidePopUp($("#element"));
@@ -219,14 +219,14 @@ mwds.hidePopUp($("#element"));
 或者使用选择器选择符合的弹出框元素：
 
 ```javascript
-mwds.hidePopUp(".myclass");
+mwds.hidePopUp($(".myclass"));
 ```
 
-该方法返回被删除的元素或NodeList。
+该方法返回单个被删除的元素或被删除的元素Array。
 
 ### 关闭所有
 
-无参数调用`hidePopUp()`方法。此时返回所有弹出框元素NodeList。
+无参数调用`hidePopUp()`方法。此时返回所有弹出框元素Array。
 
 ```javascript
 mwds.hidePopUp();
@@ -309,7 +309,7 @@ mwds仅提供关闭所有菜单的方法调用，这**是刻意的设计**。若
 
 如果mwds发现菜单的**纵**轴被浏览器的边界截断，就会将菜单移至光标的其他角以使其完全显示；如果这样做也不行，那么会将菜单缩短，使其带滚轮地完全显示。
 
-# 五、扩展框
+# 五、扩展框（DOING）
 
 点击或hover一个元素后，这个元素临时展开一个扩展框。点击或hover页面的其余部分时，该扩展框自动收回。
 

@@ -24,6 +24,7 @@ pressedMenuItem,
     //扩展框关闭flag
 isToCloseExp = false,
 pressedExpItem,
+
     //窗口超限探测优化flag
 resizeTimer = null,
     //窗口移动中zIndex周期
@@ -61,14 +62,17 @@ function checkWinPos(o){
 }
 
     //脱注册
+        //所有用到的class数据
 var allClasses = [
-    "win","a","tra","mov","cls","ontop","resize",
+    " win","a","tra","mov","cls","ontop","resize",//" win"前面那个空格是有用的！！！
     "tp","tt","tt-t","tt-b","tt-l","tt-r","tt-t-t","tt-b-t","tt-l-t","tt-r-t",
     "dp","dd","dd-tl","dd-tr","dd-bl","dd-br",
     "ep","exp","exp-tl","exp-tr","exp-bl","exp-br","exp-t","exp-b","exp-l","exp-r","exp-h","exp-c","exp-d",
     "fixpos",
     "nocls"
 ];
+
+        //脱注册主方法
 var unregister = this.unregister = (obj, deleteEle)=>{
     var isC = false;
     for(let i = 0; i < components[0].length; i++){
@@ -79,14 +83,15 @@ var unregister = this.unregister = (obj, deleteEle)=>{
     }
     if(!isC) $.E(`${obj} - This element should not be unregistered, or this element is not a component of mwds.`);
     var newEle = obj.cloneNode(true);
-    for(let i = 0; i < allClasses.length; i++) newEle.removeClass(`ds-${allClasses[i]}`);
+    newEle.removeClass(allClasses.join(" ").replaceAll(" "," ds-"));
     if(newEle.attr("class") == "") newEle.attr("class", null);
     if(deleteEle === true) obj.remove();
     else obj.replaceWith(newEle);
     return(newEle);
 }
+    //end脱注册
 
-    //分离Node与HTML字符串
+    //处理Node与HTML字符串
     //一律返回一个未进入HTML文档的Node。
     //如果是预注册，那么一定是DOM元素并且已有class，不需要脱注册
     //如果不是预注册并是DOM元素，那么需要检查是否已注册或是否在原本元素内
@@ -116,6 +121,18 @@ var toHTML = this.toHTML = (o, p, type, surePre)=>{
         return a;
     }
 }
+
+    //通用关闭逻辑
+    //概述：当
+        //主方法
+function generalClose(event, gClass){
+    var tar = event.target;
+    var goal = tar.getParentByClass(gClass) || tar;
+    if(a){
+//todo:
+    }
+}
+    //end通用关闭逻辑
 //end公共函数/方法区
 
 //注册事件
@@ -175,6 +192,12 @@ function deltaEvents(o,type){
             $.Events(o,"dblclick",e=>{
                 console.log("dblclick");
             })
+            break;
+        case "pop":
+            $.Events(o,"click",e=>{
+                //todo:
+            })
+            break;
         default: $.E();
     }
 }
@@ -219,7 +242,7 @@ function checkWinPress(isTouch, e){
 function pressOnWin(isTouch, e){
     move = e.target;
     if(move.hasClass("ds-mov")){//防止事件冒泡
-        $("*").css({"cursor":"grabbing","user-select":"none","-webkit-user-drag":"none","-webkit-user-select":"none"});
+        $("body")[0].addClass("ds-moving");//fixed:不要递归删style了好卡
         zIndexInterval = setInterval(_=>{zIndex(move);},100);
         isMoving = true;
         var t = $.rect(move,"t"), l = $.rect(move,"l");
@@ -255,11 +278,13 @@ function moveUp(){
         isMoving = false;
         clearInterval(zIndexInterval);
         zIndex(move);
-        delStyle($("html")[0]);
+        var b = $("body")[0];
+        b.removeClass("ds-moving");
+        if(b.attr("class") == "") b.attr("class", null);
     }
 }
 
-        //递归删除没用style
+/*        //递归删除没用style
 function delStyle(d){
     //let s = d.attr("style");
     //if(s == "cursor: grabbing; user-select: none; -webkit-user-drag: none;") d.attr("style",null);
@@ -267,7 +292,7 @@ function delStyle(d){
     d.css({"cursor":"","user-select":"","-webkit-user-drag":"","-webkit-user-select":""});
     if(!d.attr("style")) d.attr("style",null);
     for(let i = 0;i < d.children.length; i++) delStyle(d.children[i]);
-}
+}*/
     //end移动
 
     //窗口提升
@@ -293,8 +318,6 @@ function tOrb(a,b){
         //2022.3.11：终于有希望解决所有问题了！！
         //2022.3.26：终于解决所有问题了！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
 function zIndex(o){
-    //老代码 setZ(o,50);for(let i = 0; i < $(".ds-win").length; i++){if(tOrb(o,$(".ds-win")[i]) != "e" && !$(".ds-win")[i].hasClass("ds-zin") && !$(".ds-win")[i].hasClass("ds-ontop") && $(".ds-win")[i].css("display") != "none"){o.addClass("ds-zin");setZ(o,zIndex($(".ds-win")[i]) + 1,"zin-l");o.removeClass("ds-zin");}}return getZ(o);
-    //新代码
     //console.log(o);
     var w = $(".ds-win");
     var pN = [];
@@ -483,7 +506,7 @@ function alignToolTip(tp,isFixed){
         alignToolTip(t.getParentByClass("ds-tp"),true);
     }
     function hasTriangle(){let o = t.attr("data-tt-o");return o == "ds-tt-t-t" || o == "ds-tt-b-t" || o == "ds-tt-l-t" || o == "ds-tt-r-t";}
-    function rAC(){return t.removeClass("ds-tt-t").removeClass("ds-tt-t-t").removeClass("ds-tt-b").removeClass("ds-tt-b-t").removeClass("ds-tt-l").removeClass("ds-tt-l-t").removeClass("ds-tt-r").removeClass("ds-tt-r-t");}
+    function rAC(){return t.removeClass("ds-tt-t ds-tt-t-t ds-tt-b ds-tt-b-t ds-tt-l ds-tt-l-t ds-tt-r ds-tt-r-t");}
 }
 //end提示框
 
@@ -510,14 +533,44 @@ overlay.ontouchend = overlay.onmouseup = e=>{
 
     //显示，返回序号
 var showPopUp = this.showPopUp = d=>{
-    overlay.append(d.cloneNode(true));
+    var d2 = d.cloneNode(true);
+    overlay.append(d2);
+    deltaEvents(d2,"pop");
     return overlay.children.length - 1;
 }
 
     //隐藏
-var hidePopUp = this.hidePopUp = d=>{//传入序号！！！
-    //todo:支持多方案关闭
+var hidePopUp = this.hidePopUp = d=>{
+    var ty = typeof d, s = "d. It should be a number, a Node, a Nodelist, an HTMLCollection or an Array.";
     const A = Array.from(overlay.children);
+    if(ty == "number"){//序号
+        overlay.removeChild(A[d]);
+        return A[d];
+    }
+    else if(ty == "object"){
+        if(d instanceof Node && d.isChildOf(overlay)){//单元素关闭
+            var c = d.cloneNode(true);
+            d.remove();
+            return c;
+        }
+        else if(d instanceof NodeList || d instanceof HTMLCollection || d instanceof Array){//选择器选择了多个元素关闭
+            var total = [];
+            for(let i = 0; i < d.length; i++){
+                if(d[i].isChildOf(overlay)){
+                    total.push(d[i]);
+                    d[i].remove();
+                }
+            }
+            return total;
+        }
+        else $.E(s);
+    }
+    else if(d === undefined){
+        overlay.innerHTML = "";
+        return A;
+    }
+    else $.E(s);
+    /*const A = Array.from(overlay.children);
     if(d === undefined){
         overlay.innerHTML = "";
         return A;
@@ -525,7 +578,7 @@ var hidePopUp = this.hidePopUp = d=>{//传入序号！！！
     else{
         overlay.removeChild(A[d]);
         return A[d];
-    }
+    }*/
 }
 //end弹出框
 
@@ -658,34 +711,22 @@ var exp = this.exp = (target, expB, direction, trigger, noCls, noPro, surePre)=>
     components[0].push(expB);
     components[1].push("exp");
     function g(d){e.addClass(`ds-exp-${d}`).attr("data-exp-o", `ds-exp-${d}`);}
-    /*function bindTriggerEvents(){
-        if(alexp.hasClass("ds-exp-c")) deltaEvents(target,"exp-c");
-        else if(alexp.hasClass("ds-exp-d")) deltaEvents(target,"exp-d");
-    }
-    function bindCloseExp(){
-        //???
-    }
-    function lst(c){alexp.addClass(`ds-exp-${c}`);}*/
 }
 //end扩展框
 
 //声明式注册
 preRegister(win, toolTip, preTT, exp, preExp);
 function preRegister(win, toolTip, preTT, exp, preExp){
+    //fixed:使用多次迭代doms数组的方案成功解决了当声明式组件嵌套在另一个声明式组件里，后者又首先注册的情况下导致前者在doms中失效的问题
     while(true){
         var doms = $("*[mwds]");
         if(!doms.length) break;
         for(let i = 0; i < doms.length; i++){
             if(doms[i].attr("mwds") === null) continue;//不能改doms，就跳过
             //doms[i].attr("mwds", null);
-            //fixed:先找找当前元素内有没有嵌套着mwds的元素
-            //for(let j = 0; j < doms.length; j++) if(doms[j].isInElement(doms[i])) checkMWDS(doms[j]);
             checkMWDS(doms[i]);
         }
     }
-    //fixed:如果被toHTML的元素带有mwds属性，那么就会删不掉
-    //fixed:再次出现了![]=false的问题。
-    if($("*[mwds]").length != 0) $("*[mwds]").attr("mwds", null);
     function checkMWDS(obj){
         obj.attr("mwds", null);
         let tt, expBlock;
