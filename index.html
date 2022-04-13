@@ -7,7 +7,14 @@
         <title>mwds test</title>
     </head>
     <body>
-        <div id="ds-overlay"><div>赶紧写完！！！<br />紧写完！！！<br />写完！！！<br />完！！！<br />写不完了！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！<br /><br /><br /><br /><br /><button onclick="mwds.showPopUp(this)">点我测试弹出框</button><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /></div></div>
+        <div id="ds-overlay">
+            <div>赶紧写完！！！<br />紧写完！！！<br />写完！！！<br />完！！！<br />
+                写不完了！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+                <br /><br /><br /><br /><br /><button onclick="mwds.showPopUp(this)">点我测试弹出框</button><br />
+                <button onclick="a()">点我测试Node弹出</button><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+            </div>
+        </div>
+        <script>function a(){var b = document.createElement("div");b.innerText="我是新建的元素！";$("#ds-overlay").append(b);}</script>
         <div id="testdd">
             <ul>
                 <li onclick="alert('a')"><span>测试嵌套</span>我是第一个<div><div>测试嵌套</div></div>？？？？</li>
@@ -99,8 +106,8 @@
     <script>
         mwds.win($("#sixth"), false, false, true, true, false, false);
         //mwds.win测试通过
-        mwds.dropDown($("#content"),$("#testddd"),"tl",true);
-        mwds.dropDown($("#third"),$("#testdd"),undefined,undefined,true);
+        mwds.dropDown($("#content"),$("#testddd"),"tl",true,undefined);
+        mwds.dropDown($("#third"),$("#testdd"),undefined,undefined,undefined);
         //mwds.dropDown测试通过
         mwds.toolTip($("#tt1"),"ds-mov!!","b",true);
         //mwds.toolTip($("#tt2"),"assss今年","l",true);

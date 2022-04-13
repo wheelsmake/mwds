@@ -15,16 +15,16 @@ isMoving = false,
     //窗口移动跨方法变量
 deltaTop, deltaLeft, move,
     //窗口关闭flag
-isToCloseCls = false,
-    //弹出框关闭flag
+isToCloseWin = false,
+    //弹出框关闭flag，即将弃用
 isToClosePopUp = false,
-    //菜单关闭flag
+    //菜单关闭flag，即将弃用
 isToCloseDropDown = false,
 pressedMenuItem,
-    //扩展框关闭flag
-isToCloseExp = false,
-pressedExpItem,
-
+    //统一关闭flag
+pressedItem,
+pressedItemType,
+isToClose = false,
     //窗口超限探测优化flag
 resizeTimer = null,
     //窗口移动中zIndex周期
@@ -35,7 +35,21 @@ zIndexFallCount = 0;
     //遮罩层初始化
 createMask();//弹出框/菜单遮罩创建
     //初始化注册通用事件
-iniGenEvents();
+for(let i = 0; i < $("*").length; i++) generalEvents($("*")[i]);
+    //初始化注册专用事件
+iniDedEvents();
+    //初始化观察者
+var observer = new MutationObserver(function(mutations){
+    for(let i = 0; i < mutations.length; i++){
+        let a = mutations[i].addedNodes;
+        if(a.length){
+            for(let j = 0; j < a.length; j++){
+                generalEvents(a[j]);
+            }
+        }
+    }
+});
+observer.observe($("body")[0],{childList:true,subtree:true});
 //end初始化代码--------------------------------------------------------------------------------------------------------
 
 //公共函数/方法区
@@ -69,7 +83,7 @@ var allClasses = [
     "dp","dd","dd-tl","dd-tr","dd-bl","dd-br",
     "ep","exp","exp-tl","exp-tr","exp-bl","exp-br","exp-t","exp-b","exp-l","exp-r","exp-h","exp-c","exp-d",
     "fixpos",
-    "nocls"
+    "nocls","nopro"
 ];
 
         //脱注册主方法
@@ -121,34 +135,26 @@ var toHTML = this.toHTML = (o, p, type, surePre)=>{
         return a;
     }
 }
-
-    //通用关闭逻辑
-    //概述：当
-        //主方法
-function generalClose(event, gClass){
-    var tar = event.target;
-    var goal = tar.getParentByClass(gClass) || tar;
-    if(a){
-//todo:
-    }
-}
-    //end通用关闭逻辑
 //end公共函数/方法区
 
 //注册事件
-function iniGenEvents(){
-    $.Events($("*"),"mousedown",e=>{
-        checkCloseDropDown(e,true);
+function generalEvents(o){
+    $.Events(o,"mousedown",e=>{
+        generalCheckClose(e, true);
+        //checkCloseDropDown(e,true);
         checkWinPress(false,e);
     });
-    $.Events($("*"),"mousemove",e=>{moveWindows(false,e);});
-    $.Events($("*"),"mouseup",e=>{
-        checkCloseDropDown(e,false);
+    $.Events(o,"mousemove",e=>{moveWindows(false,e);});
+    $.Events(o,"mouseup",e=>{
+        generalCheckClose(e, false);
+        //checkCloseDropDown(e,false);
         moveUp();
     });
-    $.Events($("*"),"touchstart",e=>{checkWinPress(true,e);});
-    $.Events($("*"),"touchmove",e=>{moveWindows(true,e)});
-    $.Events($("*"),"touchend",e=>{moveUp();});
+    $.Events(o,"touchstart",e=>{checkWinPress(true,e);});
+    $.Events(o,"touchmove",e=>{moveWindows(true,e)});
+    $.Events(o,"touchend",e=>{moveUp();});
+}
+function iniDedEvents(){
     window.onresize = e=>{
         if(resizeTimer) clearTimeout(resizeTimer);
         resizeTimer = setTimeout(_=>{
@@ -156,6 +162,15 @@ function iniGenEvents(){
             for(let i = 0; i < a.length; i++) checkWinPos(a[i]);
         },100);
     }
+    /*overlay.ontouchstart = overlay.onmousedown = e=>{isToClosePopUp = e.target.id == "ds-overlay"};
+    overlay.ontouchend = overlay.onmouseup = e=>{
+        if(e.target.id == "ds-overlay" && isToClosePopUp && !e.button){//只有左键可以关闭了
+            if(!$("#ds-overlay").children.length) $("#ds-overlay").innerHTML = "";
+            else closePopUp(overlay.children.length - 1);
+            if(!overlay.children.length) closePopUp();
+            isToClosePopUp = false;
+        }
+    };*/
 }
 function deltaEvents(o,type){
     switch(type){
@@ -174,11 +189,13 @@ function deltaEvents(o,type){
             $.Events(o,"touchstart",e=>{alignToolTip(e.target);});
             break;
         case "dd"://点击菜单任意子元素后关闭所有菜单，ds-nocls除外
+            /*未统一前的代码
             $.Events(o,"mousedown",e=>{pressedMenuItem = e.target;});
             $.Events(o,"mouseup",e=>{
                 if(pressedMenuItem === e.target && !e.target.hasClass("ds-dd") && !e.target.getParentByClass("ds-dd").hasClass("ds-nocls") && !e.button) closeDropDown();
                 pressedMenuItem = undefined;
-            });
+            });*/
+            //deltaClose(o);
             break;
         case "resize":
             //todo:
@@ -194,12 +211,14 @@ function deltaEvents(o,type){
             })
             break;
         case "pop":
-            $.Events(o,"click",e=>{
-                //todo:
-            })
+            //todo:
             break;
         default: $.E();
     }
+    /*function deltaClose(obj){
+        $.Events(obj,"mousedown",e=>{generalCheckClose(e, true);});
+        $.Events(obj,"mouseup",e=>{generalCheckClose(e, false);});
+    }*/
 }
 //end注册事件
 
@@ -371,13 +390,13 @@ function closeCls(isTouch, e){
     let t = e.target;
     if(!t.hasClass("ds-cls")) return;
     if(isTouch){
-        if(isToCloseCls){
+        if(isToCloseWin){
             c();
-            isToCloseCls = false;
+            isToCloseWin = false;
             return;
         }
-        setTimeout(_=>{isToCloseCls = true;/*console.log("true");*/},0);
-        setTimeout(_=>{isToCloseCls = false;/*console.log("false");*/},450);
+        setTimeout(_=>{isToCloseWin = true;/*console.log("true");*/},0);
+        setTimeout(_=>{isToCloseWin = false;/*console.log("false");*/},450);
     }
     else c();
     function c(){
@@ -519,38 +538,39 @@ function createMask(){
         document.body.prepend(e);
         overlay = $("#ds-overlay");
     }
-}
-
-    //事件注册
-overlay.ontouchstart = overlay.onmousedown = e=>{isToClosePopUp = e.target.id == "ds-overlay"};
-overlay.ontouchend = overlay.onmouseup = e=>{
-    if(e.target.id == "ds-overlay" && isToClosePopUp && !e.button){//只有左键可以关闭了
-        hidePopUp(overlay.children.length - 1);
-        if(!overlay.children.length) hidePopUp();
-        isToClosePopUp = false;
+    //fixed:popUp的声明式注册
+    var c = overlay.children;
+    if(c.length) for(let i = 0; i < c.length; i++){
+        deltaEvents(c[i],"pop");
+        components[0].push(c[i]);
+        components[1].push("pop");
     }
-};
+}
 
     //显示，返回序号
 var showPopUp = this.showPopUp = d=>{
     var d2 = d.cloneNode(true);
     overlay.append(d2);
     deltaEvents(d2,"pop");
+    components[0].push(d2);
+    components[1].push("pop");
     return overlay.children.length - 1;
 }
 
     //隐藏
-var hidePopUp = this.hidePopUp = d=>{
-    var ty = typeof d, s = "d. It should be a number, a Node, a Nodelist, an HTMLCollection or an Array.";
+var closePopUp = this.closePopUp = d=>{
+    var ty = typeof d, s = `${d}. It should be a number, a Node, a Nodelist, an HTMLCollection or an Array.`;
     const A = Array.from(overlay.children);
     if(ty == "number"){//序号
         overlay.removeChild(A[d]);
+        checkEmpty();
         return A[d];
     }
     else if(ty == "object"){
         if(d instanceof Node && d.isChildOf(overlay)){//单元素关闭
             var c = d.cloneNode(true);
             d.remove();
+            checkEmpty();
             return c;
         }
         else if(d instanceof NodeList || d instanceof HTMLCollection || d instanceof Array){//选择器选择了多个元素关闭
@@ -561,6 +581,7 @@ var hidePopUp = this.hidePopUp = d=>{
                     d[i].remove();
                 }
             }
+            checkEmpty();
             return total;
         }
         else $.E(s);
@@ -570,6 +591,7 @@ var hidePopUp = this.hidePopUp = d=>{
         return A;
     }
     else $.E(s);
+    function checkEmpty(){if(!$("#ds-overlay").children.length) $("#ds-overlay").innerHTML = "";}
     /*const A = Array.from(overlay.children);
     if(d === undefined){
         overlay.innerHTML = "";
@@ -643,8 +665,9 @@ var closeDropDown = this.closeDropDown = _=>{
     }
 }
 
-    //点击所有元素时检查是否需要关闭菜单todo:统一菜单与扩展框关闭逻辑（最好把弹出框也统一进来）
-function checkCloseDropDown(e,isDown){
+    //点击所有元素时检查是否需要关闭菜单
+    //done:已经统一关闭逻辑，此处代码已弃用
+/*function checkCloseDropDown(e,isDown){
     //这个就不用解释了吧
     let obj = e.target;
     //按下的不是左键，直接返回
@@ -661,7 +684,7 @@ function checkCloseDropDown(e,isDown){
             isToCloseDropDown = false;
         }
     }
-}
+}*/
 //end菜单
 
 //扩展框
@@ -712,6 +735,11 @@ var exp = this.exp = (target, expB, direction, trigger, noCls, noPro, surePre)=>
     components[1].push("exp");
     function g(d){e.addClass(`ds-exp-${d}`).attr("data-exp-o", `ds-exp-${d}`);}
 }
+
+    //关闭扩展框
+function closeExp(){
+    
+}
 //end扩展框
 
 //声明式注册
@@ -749,4 +777,74 @@ function preRegister(win, toolTip, preTT, exp, preExp){
     }
 }
 //end声明式注册
+
+//通用关闭逻辑
+function generalCheckClose(event, isDown){
+    if(!event.button){//左键关闭，其余键不理
+        var tar = event.target;
+        if(isDown){
+            let isInCanClose = false;
+            for(let i = 0; i < components[0].length; i++){
+                let c0 = components[0][i], c1 = components[1][i];
+                let isRelatedToc0 = tar.isInElement(c0) || tar == c0;
+                let isValidClosee = c1 == "dd" || c1 == "exp" || c1 == "pop";
+                if(isRelatedToc0 && isValidClosee){
+                    isInCanClose = true;
+                    console.log(tar, "related to", c0);
+                }
+                if(isValidClosee && isRelatedToc0 && !c0.hasClass("ds-nocls")){
+                    //这里表示点击的目标就在一个可以关闭的元素内，那么记录该元素
+                    pressedItem = c0;
+                    pressedItemType = c1;
+                    break;//note:短路求值，可能有问题
+                }
+            }
+            //按下的元素与支持关闭的元素无关
+            isToClose = !isInCanClose;
+            console.log(pressedItem, pressedItemType, isInCanClose, isToClose);
+        }
+        else if(pressedItem){
+            console.log("check pressedItem");
+            if(tar.isInElement(pressedItem) || tar == pressedItem){
+                //这里表示松开的目标也在按下的元素
+                processClose();
+                pressedItem = undefined;
+                pressedItemType = undefined;
+            }
+        }
+        else if(isToClose){
+            console.log("check isToClose");
+            let isInCanClose = false;
+            for(let i = 0; i < components[0].length; i++){
+                let c0 = components[0][i], c1 = components[1][i];
+                if((tar.isInElement(c0) || tar == c0) &&
+                   (c1 == "dd" || c1 == "exp" || c1 == "pop")){
+                    isInCanClose = true;
+                    break;//note:短路求值，可能不适用于popUp
+                }
+            }
+            if(!isInCanClose){
+                processClose();
+                //console.log("close by isToClose");//按下松开都不在支持关闭的元素内，可关闭
+                isToClose = false;
+            }
+        }
+    }
+    function processClose(){
+        console.log(`${pressedItemType} close`);
+        if(pressedItemType == "dd") closeDropDown();
+        else if(pressedItemType == "exp"){
+
+        }
+        else if(pressedItemType == "pop"){
+
+        }
+        else{//isToClose
+            closeExp();
+            closeDropDown();
+            if(overlay.children.length) closePopUp(overlay.children.length - 1);
+        }
+    }
+}
+//end通用关闭逻辑
 }
