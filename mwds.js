@@ -2,7 +2,7 @@
 "use strict";
 var mwds = new function(){
 //初始化代码--------------------------------------------------------------------------------------------------------
-console.log("mwds.js - MoreWindows ©LJM12914\r\noink组件。 https://github.com/openink/mwds");
+console.log("mwds.js - MoreWindows ©LJM12914\r\noink组件。 https://github.com/wheelsmake/mwds");
 
     //内部luery指代
 var $ = luery,
@@ -532,7 +532,7 @@ function alignToolTip(tp,isFixed){
 //弹出框
     //遮罩创建
 function createMask(){
-    if(overlay == false){//important:这里不可以写!overlay，对于空数组它们的运行结果不一致，我也觉得很奇怪。可见我提的问题：https://www.zhihu.com/question/515825074
+    if(overlay.length = 0){//important:这里不可以写!overlay，对于空数组它们的运行结果不一致，我也觉得很奇怪。可见我提的问题：https://www.zhihu.com/question/515825074
         let e = document.createElement("div");
         e.id = "ds-overlay";
         document.body.prepend(e);
