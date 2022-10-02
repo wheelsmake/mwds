@@ -190,12 +190,12 @@ html{font-size: 16px;}
     /*position不可更改*/
     position: relative;
 }
-.ds-exp{
-
-}
 :hover > .ds-exp.ds-exp-h{
     /*display不可更改*/
     display: block;
+}
+/*.ds-exp{
+
 }
 .ds-exp-tl{
 
@@ -208,7 +208,7 @@ html{font-size: 16px;}
 }
 .ds-exp-br{
     
-}
+}*/
 .ds-exp-t{
     bottom: 100%;
 }
